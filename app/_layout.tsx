@@ -1,29 +1,29 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { globalStyles } from '@/src/styles/globalStyles'
+import { Poppins_200ExtraLight } from '@expo-google-fonts/poppins/200ExtraLight'
+import { Poppins_300Light } from '@expo-google-fonts/poppins/300Light'
+import { Poppins_400Regular } from '@expo-google-fonts/poppins/400Regular'
+import { Poppins_500Medium } from '@expo-google-fonts/poppins/500Medium'
+import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold'
+import { useFonts } from 'expo-font'
+import { Text, View } from 'react-native'
+import 'react-native-reanimated'
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  let [fontsLoaded] = useFonts({
+    Poppins_200ExtraLight,
+    Poppins_300Light,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_700Bold,
+  })
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  if (!fontsLoaded) {
+    return <View />
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+    <View style={[globalStyles.container, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+      <Text style={globalStyles.text}>Hello World!</Text>
+    </View>
+  )
 }
