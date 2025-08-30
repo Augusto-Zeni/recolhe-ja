@@ -13,4 +13,9 @@ export const globalStyles = StyleSheet.create({
     lineHeight: 24,
     fontSize: 16,
   },
+  buttonText: {
+    fontFamily: 'Poppins_700Bold',
+    color: colors.white,
+    fontSize: 16
+  }
 })
