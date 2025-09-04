@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ParticipantStatus {
+  INSCRITO
+  CANCELADO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  googleId     String?  @unique @map("google_id")
+  avatar       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  items                   Item[]
+  createdCollectionPoints CollectionPoint[]
+  createdEvents           Event[]
+  eventParticipations     EventParticipant[]
+
+  @@map("users")
+}
+
+model Item {
+  id                String   @id @default(cuid())
+  userId            String?  @map("user_id")
+  imageUrl          String   @map("image_url")
+  predictedCategory String   @map("predicted_category")
+  confidence        Float
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("items")
+}
+
+model CollectionPoint {
+  id                 String   @id @default(cuid())
+  name               String
+  lat                Float
+  lon                Float
+  address            String
+  acceptedCategories String[] @map("accepted_categories")
+  openingHours       String   @map("opening_hours")
+  contact            String
+  createdBy          String   @map("created_by")
+
+  creator User @relation(fields: [createdBy], references: [id])
+
+  @@map("collection_points")
+}
+
+model Event {
+  id                 String   @id @default(cuid())
+  title              String
+  description        String
+  lat                Float
+  lon                Float
+  startAt            DateTime @map("start_at")
+  endAt              DateTime @map("end_at")
+  acceptedCategories String[] @map("accepted_categories")
+  createdBy          String   @map("created_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  creator      User               @relation(fields: [createdBy], references: [id])
+  participants EventParticipant[]
+
+  @@map("events")
+}
+
+model EventParticipant {
+  id      String            @id @default(cuid())
+  eventId String            @map("event_id")
+  userId  String            @map("user_id")
+  status  ParticipantStatus @default(INSCRITO)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_participants")
+}
