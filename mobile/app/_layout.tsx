@@ -6,7 +6,23 @@ import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold'
 import { useFonts } from 'expo-font'
 import { View } from 'react-native'
 import 'react-native-reanimated'
+import { AuthProvider, useAuth } from '@/src/contexts/AuthContext'
+import { NavigationProvider, AppNavigator } from '@/src/navigation/NavigationContext'
 import { LoginSignUp } from './login-sign-up'
+
+function AppContent() {
+  const { user } = useAuth();
+  
+  if (user) {
+    return (
+      <NavigationProvider>
+        <AppNavigator />
+      </NavigationProvider>
+    );
+  }
+  
+  return <LoginSignUp />;
+}
 
 export default function RootLayout() {
   let [fontsLoaded] = useFonts({
@@ -22,6 +38,8 @@ export default function RootLayout() {
   }
 
   return (
-    <LoginSignUp />
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
