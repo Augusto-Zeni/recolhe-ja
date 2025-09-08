@@ -47,7 +47,7 @@ export class CreateAccountController {
       data: {
         name,
         email,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
       },
     });
   }

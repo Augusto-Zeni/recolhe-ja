@@ -1,0 +1,546 @@
+openapi: 3.0.0
+info:
+  title: RecolheJá API
+  description: API para identificação de resíduos e gestão de pontos de coleta
+  version: 1.0.0
+  contact:
+    name: Equipe RecolheJá
+    email: contato@recolheja.com
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desenvolvimento
+  - url: https://api.recolheja.com
+    description: Servidor de produção
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+        predictedCategory:
+          type: string
+          enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        createdAt:
+          type: string
+          format: date-time
+
+    CollectionPoint:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        address:
+          type: string
+        acceptedCategories:
+          type: array
+          items:
+            type: string
+            enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+        openingHours:
+          type: string
+        contact:
+          type: string
+        createdBy:
+          type: string
+        creator:
+          $ref: '#/components/schemas/User'
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        acceptedCategories:
+          type: array
+          items:
+            type: string
+            enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+        createdBy:
+          type: string
+        creator:
+          $ref: '#/components/schemas/User'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventParticipant'
+
+    EventParticipant:
+      type: object
+      properties:
+        id:
+          type: string
+        eventId:
+          type: string
+        userId:
+          type: string
+        status:
+          type: string
+          enum: [INSCRITO, CANCELADO]
+        user:
+          $ref: '#/components/schemas/User'
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Criar nova conta de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+      responses:
+        201:
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Fazer login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /api/items:
+    post:
+      tags:
+        - Items
+      summary: Upload e classificação de imagem
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Imagem classificada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  predicted_category:
+                    type: string
+                  confidence:
+                    type: number
+                  instruction:
+                    type: string
+                  image_url:
+                    type: string
+
+    get:
+      tags:
+        - Items
+      summary: Listar itens do usuário
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        200:
+          description: Lista de itens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+
+  /api/points:
+    get:
+      tags:
+        - Collection Points
+      summary: Listar pontos de coleta
+      parameters:
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lon
+          in: query
+          schema:
+            type: number
+        - name: radius
+          in: query
+          schema:
+            type: integer
+            default: 10000
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+      responses:
+        200:
+          description: Lista de pontos de coleta
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/CollectionPoint'
+                    - type: object
+                      properties:
+                        distance:
+                          type: number
+                          description: Distância em metros (apenas quando lat/lon fornecidos)
+
+    post:
+      tags:
+        - Collection Points
+      summary: Criar ponto de coleta
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - lat
+                - lon
+                - address
+                - acceptedCategories
+                - openingHours
+                - contact
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                lat:
+                  type: number
+                  minimum: -90
+                  maximum: 90
+                lon:
+                  type: number
+                  minimum: -180
+                  maximum: 180
+                address:
+                  type: string
+                  minLength: 5
+                acceptedCategories:
+                  type: array
+                  items:
+                    type: string
+                    enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+                  minItems: 1
+                openingHours:
+                  type: string
+                contact:
+                  type: string
+      responses:
+        201:
+          description: Ponto de coleta criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionPoint'
+
+  /api/events:
+    get:
+      tags:
+        - Events
+      summary: Listar eventos
+      parameters:
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lon
+          in: query
+          schema:
+            type: number
+        - name: radius
+          in: query
+          schema:
+            type: integer
+            default: 10000
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+      responses:
+        200:
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Event'
+                    - type: object
+                      properties:
+                        distance:
+                          type: number
+                          description: Distância em metros (apenas quando lat/lon fornecidos)
+
+    post:
+      tags:
+        - Events
+      summary: Criar evento
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - lat
+                - lon
+                - startAt
+                - endAt
+                - acceptedCategories
+              properties:
+                title:
+                  type: string
+                  minLength: 2
+                description:
+                  type: string
+                  minLength: 10
+                lat:
+                  type: number
+                  minimum: -90
+                  maximum: 90
+                lon:
+                  type: number
+                  minimum: -180
+                  maximum: 180
+                startAt:
+                  type: string
+                  format: date-time
+                endAt:
+                  type: string
+                  format: date-time
+                acceptedCategories:
+                  type: array
+                  items:
+                    type: string
+                    enum: [PLASTICO, PAPEL, METAL, VIDRO, ORGANICO, ELETRONICO, OUTROS]
+                  minItems: 1
+      responses:
+        201:
+          description: Evento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /api/events/{id}/join:
+    post:
+      tags:
+        - Events
+      summary: Participar de evento
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Participação confirmada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventParticipant'
+
+  /api/users/profile:
+    get:
+      tags:
+        - Users
+      summary: Ver perfil do usuário
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Dados do perfil
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      _count:
+                        type: object
+                        properties:
+                          items:
+                            type: integer
+                          createdCollectionPoints:
+                            type: integer
+                          createdEvents:
+                            type: integer
+                          eventParticipations:
+                            type: integer
+
+    put:
+      tags:
+        - Users
+      summary: Atualizar perfil
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                avatar:
+                  type: string
+                  format: uri
+      responses:
+        200:
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'

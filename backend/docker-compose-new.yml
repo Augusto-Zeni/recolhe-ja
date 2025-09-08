@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: recolheja_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: recolheja
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - recolheja_network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: recolheja_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - recolheja_network
+
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recolheja_api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/recolheja?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-here
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: development
+    depends_on:
+      - postgres
+    volumes:
+      - ./uploads:/app/uploads
+      - .:/app
+      - /app/node_modules
+    networks:
+      - recolheja_network
+    command: npm run start:dev
+
+volumes:
+  postgres_data:
+
+networks:
+  recolheja_network:
+    driver: bridge
