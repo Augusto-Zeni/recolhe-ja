@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: recolheja_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: recolheja
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - recolheja_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: recolheja_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - recolheja_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: recolheja_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/recolheja?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-here-change-in-production
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: development
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - recolheja_network
+    command: npm run start:dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/users/profile"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Mobile (Expo)
+  frontend:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile
+    container_name: recolheja_frontend
+    restart: unless-stopped
+    ports:
+      - "8081:8081"    # Expo Metro bundler
+      - "19000:19000"  # Expo CLI
+      - "19001:19001"  # Expo CLI
+      - "19002:19002"  # Expo CLI
+      - "19006:19006"  # Expo web
+    environment:
+      EXPO_DEVTOOLS_LISTEN_ADDRESS: 0.0.0.0
+      EXPO_WEB_PORT: 19006
+      REACT_NATIVE_PACKAGER_HOSTNAME: 0.0.0.0
+    volumes:
+      - ./mobile:/app
+      - /app/node_modules
+    networks:
+      - recolheja_network
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+
+networks:
+  recolheja_network:
+    driver: bridge
