@@ -8,7 +8,7 @@ import { View } from 'react-native'
 import 'react-native-reanimated'
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext'
 import { NavigationProvider, AppNavigator } from '@/src/navigation/NavigationContext'
-import { LoginSignUp } from './login-sign-up'
+import LoginSignUp from './login-sign-up'
 
 function AppContent() {
   const { user } = useAuth();

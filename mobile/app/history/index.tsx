@@ -428,3 +428,6 @@ const styles = StyleSheet.create({
     color: colors.green300,
   },
 });
+
+// Export default para compatibilidade com Expo Router
+export default History;

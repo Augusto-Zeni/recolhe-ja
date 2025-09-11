@@ -346,3 +346,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 });
+
+// Export default para compatibilidade com Expo Router
+export default Classification;

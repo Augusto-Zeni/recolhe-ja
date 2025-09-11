@@ -13,7 +13,8 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { EventsService, CreateEventDto } from './events.service';
+import { EventsService } from './events.service';
+import type { CreateEventDto } from './events.service';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../pipes/zod-validation-pipe';
 

@@ -259,3 +259,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+// Export default para compatibilidade com Expo Router
+export default Home;

@@ -17,7 +17,7 @@ import {
   Alert
 } from 'react-native'
 
-export function LoginSignUp() {
+export default function LoginSignUp() {
   const [isLogin, setIsLogin] = useState<boolean>(true)
   const [formData, setFormData] = useState({
     name: '',

@@ -13,7 +13,8 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CollectionPointsService, CreateCollectionPointDto } from './collection-points.service';
+import { CollectionPointsService } from './collection-points.service';
+import type { CreateCollectionPointDto } from './collection-points.service';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../pipes/zod-validation-pipe';
 

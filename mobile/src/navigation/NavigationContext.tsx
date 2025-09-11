@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Home } from '@/app/home';
-import { Classification } from '@/app/classification';
-import { Map } from '@/app/map';
-import { Events } from '@/app/events';
-import { History } from '@/app/history';
-import { Profile } from '@/app/profile';
+import { View, Text } from 'react-native';
 
 export type Screen = 'home' | 'classification' | 'map' | 'events' | 'history' | 'profile';
 
@@ -53,20 +48,40 @@ export function useNavigation(): NavigationContextData {
 export function AppNavigator() {
   const { currentScreen } = useNavigation();
 
-  switch (currentScreen) {
-    case 'home':
-      return <Home />;
-    case 'classification':
-      return <Classification />;
-    case 'map':
-      return <Map />;
-    case 'events':
-      return <Events />;
-    case 'history':
-      return <History />;
-    case 'profile':
-      return <Profile />;
-    default:
-      return <Home />;
-  }
+  // Lazy loading dos componentes para evitar ciclos de dependência
+  const HomeComponent = React.lazy(() => import('@/app/home').then(module => ({ default: module.Home })));
+  const ClassificationComponent = React.lazy(() => import('@/app/classification').then(module => ({ default: module.Classification })));
+  const MapComponent = React.lazy(() => import('@/app/map').then(module => ({ default: module.Map })));
+  const EventsComponent = React.lazy(() => import('@/app/events').then(module => ({ default: module.Events })));
+  const HistoryComponent = React.lazy(() => import('@/app/history').then(module => ({ default: module.History })));
+  const ProfileComponent = React.lazy(() => import('@/app/profile').then(module => ({ default: module.Profile })));
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'home':
+        return <HomeComponent />;
+      case 'classification':
+        return <ClassificationComponent />;
+      case 'map':
+        return <MapComponent />;
+      case 'events':
+        return <EventsComponent />;
+      case 'history':
+        return <HistoryComponent />;
+      case 'profile':
+        return <ProfileComponent />;
+      default:
+        return <HomeComponent />;
+    }
+  };
+
+  return (
+    <React.Suspense fallback={
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    }>
+      {renderScreen()}
+    </React.Suspense>
+  );
 }

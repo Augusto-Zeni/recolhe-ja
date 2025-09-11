@@ -15,6 +15,59 @@ export interface CreateEventDto {
 export class EventsService {
   constructor(private prisma: PrismaService) {}
 
+  async findNearbyEvents(
+    lat: number,
+    lon: number,
+    radius = 10000, // 10km default
+    category?: string,
+  ) {
+    const whereClause: any = {
+      endAt: {
+        gte: new Date(), // Only future events
+      },
+    };
+
+    if (category) {
+      whereClause.acceptedCategories = {
+        has: category,
+      };
+    }
+
+    const events = await this.prisma.event.findMany({
+      where: whereClause,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Filter by distance
+    if (lat && lon) {
+      return events.filter((event) => {
+        const distance = this.calculateDistance(lat, lon, event.lat, event.lon);
+        return distance <= radius;
+      });
+    }
+
+    return events;
+  }
+
   async createEvent(userId: string, data: CreateEventDto) {
     return this.prisma.event.create({
       data: {
@@ -50,18 +103,15 @@ export class EventsService {
     radius = 10000, // 10km default
     category?: string,
   ) {
-    let whereClause = {
+    const whereClause: any = {
       endAt: {
         gte: new Date(), // Only future events
       },
     };
 
     if (category) {
-      whereClause = {
-        ...whereClause,
-        acceptedCategories: {
-          has: category,
-        },
+      whereClause.acceptedCategories = {
+        has: category,
       };
     }
 
