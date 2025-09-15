@@ -6,7 +6,7 @@ import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold'
 import { useFonts } from 'expo-font'
 import { View } from 'react-native'
 import 'react-native-reanimated'
-import { LoginSignUp } from './login-sign-up'
+import Register from './register'
 
 export default function RootLayout() {
   let [fontsLoaded] = useFonts({
@@ -22,6 +22,6 @@ export default function RootLayout() {
   }
 
   return (
-    <LoginSignUp />
+    <Register />
   )
 }
