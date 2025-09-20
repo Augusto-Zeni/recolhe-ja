@@ -9,8 +9,15 @@ import {
   View
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useAuth } from '@/src/contexts/AuthContext'
 
 export default function Register() {
+  const { handleSetIsAuthentication } = useAuth()
+
+  const handleLogin = async () => {
+    handleSetIsAuthentication(true)
+  }
+
   return (
     <ImageBackground
       source={require('@/assets/images/background-register.png')}
@@ -26,7 +33,7 @@ export default function Register() {
           <View style={styles.contentContainer}>
             <View style={styles.containerAnimations}>
               <View style={styles.centerWrapper}>
-                <Image
+                {/* <Image
                   source={require('@/assets/gifs/green-leaf.gif')}
                   style={styles.leafBase}
                   contentFit="cover"
@@ -35,7 +42,7 @@ export default function Register() {
                   source={require('@/assets/gifs/yellow-leaf.gif')}
                   style={styles.leafOverlay}
                   contentFit="cover"
-                />
+                /> */}
               </View>
             </View>
 
@@ -56,10 +63,11 @@ export default function Register() {
                   <Text style={styles.text}>contribua para um futuro mais verde.</Text>
                 </View>
 
-                <Button onPress={() => { }} style={styles.button}>
+                <Button onPress={handleLogin} style={styles.button}>
                   <Image source={require('@/assets/images/google-logo.svg')} contentFit='contain' style={styles.logoGoogle} />
                   <Text style={styles.buttonText}>Entrar com o Google</Text>
                 </Button>
+
                 <View style={styles.infoTextContent}>
                   <Text style={styles.infoText}>Criando uma conta,</Text>
                   <Text style={styles.infoText}>você concorda com todos os nossos termos e condições.</Text>
@@ -103,19 +111,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  leafBase: {
-    position: 'absolute',
-    zIndex: 0,
-    width: '100%',
-    height: '60%',
-  },
-  leafOverlay: {
-    position: 'absolute',
-    zIndex: 1,
-    transform: [{ rotate: '180deg' }],
-    width: '100%',
-    height: '60%',
-  },
+  // leafBase: {
+  //   position: 'absolute',
+  //   zIndex: 0,
+  //   width: '100%',
+  //   height: '60%',
+  // },
+  // leafOverlay: {
+  //   position: 'absolute',
+  //   zIndex: 1,
+  //   transform: [{ rotate: '180deg' }],
+  //   width: '100%',
+  //   height: '60%',
+  // },
   containerRegister: {
     flex: 1,
     backgroundColor: colors.green100,

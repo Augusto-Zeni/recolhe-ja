@@ -6,7 +6,9 @@ import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold'
 import { useFonts } from 'expo-font'
 import { View } from 'react-native'
 import 'react-native-reanimated'
-import Register from './register'
+import { Stack } from 'expo-router'
+import { AuthGuard } from '@/src/components/AuthGuard/AuthGuard'
+import { AuthProvider } from '@/src/contexts/AuthContext'
 
 export default function RootLayout() {
   let [fontsLoaded] = useFonts({
@@ -22,6 +24,10 @@ export default function RootLayout() {
   }
 
   return (
-    <Register />
+    <AuthProvider>
+      <AuthGuard>
+        <Stack screenOptions={{ headerShown: false }} />
+      </AuthGuard>
+    </AuthProvider>
   )
 }
