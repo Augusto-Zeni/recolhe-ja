@@ -15,9 +15,9 @@ services:
     build: .
     restart: always
     ports:
-      - '3000:3000'
-    environment:
-      DATABASE_URL: postgres://user:password@db:5432/recolheja_db
+      - '${PORT:-3000}:3000'
+    env_file:
+      - .env
     depends_on:
       - db
     volumes:
