@@ -14,7 +14,7 @@ export class Item {
   imageUrl: string;
 
   @Column({ nullable: true })
-  predictedCategory: string;
+  predictedCategoryId: string;
 
   @Column({ type: 'float', nullable: true })
   confidence: number;
@@ -29,5 +29,5 @@ export class Item {
   user: User;
 
   @ManyToOne(() => Category, (category) => category.items)
-  category: Category;
+  predictedCategory: Category;
 }
