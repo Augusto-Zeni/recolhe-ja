@@ -1,12 +1,6 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  ManyToOne,
-} from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Category } from '../../categories/entities/category.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Category } from 'src/categories/entities/category.entity';
 
 @Entity()
 export class Item {
@@ -27,6 +21,9 @@ export class Item {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.items)
   user: User;

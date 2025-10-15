@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Event } from './event.entity';
-import { Category } from '../../categories/entities/category.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Event } from 'src/events/entities/event.entity';
+import { Category } from 'src/categories/entities/category.entity';
 
 @Entity()
 export class EventCategory {
@@ -12,6 +12,12 @@ export class EventCategory {
 
   @Column()
   categoryId: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Event, (event) => event.eventCategories)
   event: Event;

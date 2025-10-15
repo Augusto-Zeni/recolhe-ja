@@ -3,12 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { EventCategory } from './event-category.entity';
-import { EventParticipant } from './event-participant.entity';
+import { User } from 'src/users/entities/user.entity';
+import { EventCategory } from 'src/events/entities/event-category.entity';
+import { EventParticipant } from 'src/events/entities/event-participant.entity';
 
 @Entity()
 export class Event {
@@ -39,15 +40,15 @@ export class Event {
   @CreateDateColumn()
   createdAt: Date;
 
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @ManyToOne(() => User, (user) => user.events)
   user: User;
 
   @OneToMany(() => EventCategory, (eventCategory) => eventCategory.event)
   eventCategories: EventCategory[];
 
-  @OneToMany(
-    () => EventParticipant,
-    (eventParticipant) => eventParticipant.event,
-  )
+  @OneToMany(() => EventParticipant, (eventParticipant) => eventParticipant.event)
   eventParticipants: EventParticipant[];
 }

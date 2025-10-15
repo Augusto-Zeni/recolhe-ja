@@ -1,14 +1,8 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  OneToMany,
-} from 'typeorm';
-import { Item } from '../../items/entities/item.entity';
-import { CollectionPoint } from '../../collection-points/entities/collection-point.entity';
-import { Event } from '../../events/entities/event.entity';
-import { EventParticipant } from '../../events/entities/event-participant.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Item } from 'src/items/entities/item.entity';
+import { CollectionPoint } from 'src/collection-points/entities/collection-point.entity';
+import { Event } from 'src/events/entities/event.entity';
+import { EventParticipant } from 'src/events/entities/event-participant.entity';
 
 @Entity()
 export class User {
@@ -30,21 +24,18 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @OneToMany(() => Item, (item) => item.user)
   items: Item[];
 
-  @OneToMany(
-    () => CollectionPoint,
-    (collectionPoint) => collectionPoint.user,
-  )
+  @OneToMany(() => CollectionPoint, (collectionPoint) => collectionPoint.user)
   collectionPoints: CollectionPoint[];
 
   @OneToMany(() => Event, (event) => event.user)
   events: Event[];
 
-  @OneToMany(
-    () => EventParticipant,
-    (eventParticipant) => eventParticipant.user,
-  )
+  @OneToMany(() => EventParticipant, (eventParticipant) => eventParticipant.user)
   eventParticipants: EventParticipant[];
 }

@@ -10,11 +10,7 @@ export class AuthController {
 
   @Post('register')
   async register(@Body(new ZodValidationPipe()) registerDto: RegisterDto) {
-    return this.authService.register(
-      registerDto.email,
-      registerDto.password,
-      registerDto.name,
-    );
+    return this.authService.register(registerDto.email, registerDto.password, registerDto.name);
   }
 
   @Post('login')
@@ -33,12 +29,12 @@ export class AuthController {
       req.user.googleId,
       req.user.email,
       req.user.firstName,
-      req.user.lastName,
+      req.user.lastName
     );
   }
 
-  @Get('profile')
   @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
   getProfile(@Req() req) {
     return req.user;
   }

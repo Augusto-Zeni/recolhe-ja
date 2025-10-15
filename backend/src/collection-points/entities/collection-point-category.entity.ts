@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { CollectionPoint } from './collection-point.entity';
-import { Category } from '../../categories/entities/category.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { CollectionPoint } from 'src/collection-points/entities/collection-point.entity';
+import { Category } from 'src/categories/entities/category.entity';
 
 @Entity()
 export class CollectionPointCategory {
@@ -13,10 +13,13 @@ export class CollectionPointCategory {
   @Column()
   categoryId: string;
 
-  @ManyToOne(
-    () => CollectionPoint,
-    (collectionPoint) => collectionPoint.collectionPointCategories,
-  )
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => CollectionPoint, (collectionPoint) => collectionPoint.collectionPointCategories)
   collectionPoint: CollectionPoint;
 
   @ManyToOne(() => Category, (category) => category.collectionPointCategories)

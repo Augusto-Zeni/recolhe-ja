@@ -1,0 +1,38 @@
+### RecolheJá API - HTTP Client
+### Baseado no VS Code REST Client Extension
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+# Variável para armazenar o token JWT (será preenchida após login/registro)
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8uc2lsdmFAZXhhbXBsZS5jb20iLCJzdWIiOiIzNWQ5MjY0OC04YTM2LTQwY2YtODNkNS03YmMxMjQ3YjE5ZmIiLCJpYXQiOjE3NjA0OTAxNzEsImV4cCI6MTc2MDQ5Mzc3MX0.-vFbvF2r0Od11C0czTEK-ZSRcP0s-k_WPISAtM7EBhQ
+
+###############################################
+# AUTH - Autenticação
+###############################################
+
+### Registrar novo usuário
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "João Silva",
+  "email": "joao.silva@example.com",
+  "password": "senha123"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "joao.silva@example.com",
+  "password": "senha123"
+}
+
+### Obter perfil do usuário autenticado
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+

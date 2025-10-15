@@ -3,11 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { CollectionPointCategory } from './collection-point-category.entity';
+import { User } from 'src/users/entities/user.entity';
+import { CollectionPointCategory } from 'src/collection-points/entities/collection-point-category.entity';
 
 @Entity()
 export class CollectionPoint {
@@ -37,6 +38,9 @@ export class CollectionPoint {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.collectionPoints)
   user: User;
