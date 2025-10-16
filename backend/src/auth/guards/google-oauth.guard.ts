@@ -10,17 +10,20 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
     console.log('🔐 Google OAuth Guard - Starting authentication');
     console.log('  Redirect URI from query:', redirectUri);
 
+    const options: Record<string, any> = {
+      prompt: 'select_account',
+      accessType: 'offline',
+      scope: ['profile', 'email'],
+    };
+
     if (redirectUri) {
-      // Codifica o redirect_uri no state parameter
       const state = Buffer.from(JSON.stringify({ redirect_uri: redirectUri })).toString('base64');
       console.log('  State parameter created:', state.substring(0, 30) + '...');
 
-      return {
-        state,
-      };
+      options.state = state;
     }
 
     console.log('  No redirect_uri provided, using default');
-    return {};
+    return options;
   }
 }
