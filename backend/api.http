@@ -1,18 +1,25 @@
 ### RecolheJá API - HTTP Client
 ### Baseado no VS Code REST Client Extension
 ### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+### 
+### Fluxo da Aplicação:
+### 1. Autenticação (Registro e Login)
+### 2. Categorias (Criar categorias para classificar materiais)
+### 3. Pontos de Coleta (Cadastrar locais de coleta)
+### 4. Eventos (Criar eventos de reciclagem)
+### 5. Items (Gerenciar itens para reciclagem)
+### 6. Usuários (Gerenciar perfil)
 
 @baseUrl = http://localhost:3000
 @contentType = application/json
-
-# Variável para armazenar o token JWT (será preenchida após login/registro)
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8uc2lsdmFAZXhhbXBsZS5jb20iLCJzdWIiOiIzNWQ5MjY0OC04YTM2LTQwY2YtODNkNS03YmMxMjQ3YjE5ZmIiLCJpYXQiOjE3NjA0OTAxNzEsImV4cCI6MTc2MDQ5Mzc3MX0.-vFbvF2r0Od11C0czTEK-ZSRcP0s-k_WPISAtM7EBhQ
+@token = {{login.response.body.access_token}}
 
 ###############################################
-# AUTH - Autenticação
+# 1. AUTH - Autenticação
 ###############################################
 
-### Registrar novo usuário
+### 1.1 Registrar novo usuário
+# @name register
 POST {{baseUrl}}/auth/register
 Content-Type: {{contentType}}
 
@@ -22,7 +29,7 @@ Content-Type: {{contentType}}
   "password": "senha123"
 }
 
-### Login
+### 1.2 Login
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
@@ -32,7 +39,391 @@ Content-Type: {{contentType}}
   "password": "senha123"
 }
 
-### Obter perfil do usuário autenticado
+### 1.3 Obter perfil do usuário autenticado
 GET {{baseUrl}}/auth/profile
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
+
+###############################################
+# 2. CATEGORIES - Categorias de Materiais
+###############################################
+
+### 2.1 Criar categoria - Eletrônicos
+# @name createCategoryEletronicos
+POST {{baseUrl}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Eletrônicos"
+}
+
+### 2.2 Criar categoria - Plásticos
+# @name createCategoryPlasticos
+POST {{baseUrl}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Plásticos"
+}
+
+### 2.3 Criar categoria - Vidros
+# @name createCategoryVidros
+POST {{baseUrl}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Vidros"
+}
+
+### 2.4 Criar categoria - Papéis
+# @name createCategoryPapeis
+POST {{baseUrl}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Papéis"
+}
+
+### 2.5 Listar todas as categorias
+GET {{baseUrl}}/categories
+Authorization: Bearer {{token}}
+
+### 2.6 Listar categorias com paginação
+GET {{baseUrl}}/categories?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### 2.7 Buscar categorias por nome
+GET {{baseUrl}}/categories/search?q=plástico
+Authorization: Bearer {{token}}
+
+### 2.8 Obter categoria específica por ID
+GET {{baseUrl}}/categories/{{createCategoryEletronicos.response.body.id}}
+Authorization: Bearer {{token}}
+
+### 2.9 Atualizar categoria
+PATCH {{baseUrl}}/categories/{{createCategoryEletronicos.response.body.id}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Eletrônicos e Eletrodomésticos"
+}
+
+### 2.10 Deletar categoria
+DELETE {{baseUrl}}/categories/categoria-uuid-aqui
+Authorization: Bearer {{token}}
+
+###############################################
+# 3. COLLECTION POINTS - Pontos de Coleta
+###############################################
+
+### 3.1 Criar ponto de coleta - Centro de Reciclagem
+# @name createCollectionPoint1
+POST {{baseUrl}}/collection-points
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Centro de Reciclagem Central",
+  "lat": -29.4541,
+  "lon": -51.9617,
+  "address": "Rua das Flores, 123, Lajeado, RS",
+  "contact": "(51) 99999-9999",
+  "openingHours": "08:00 - 18:00",
+  "categoryIds": []
+}
+
+### 3.2 Criar ponto de coleta - Cooperativa
+# @name createCollectionPoint2
+POST {{baseUrl}}/collection-points
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Cooperativa de Recicladores",
+  "lat": -29.4600,
+  "lon": -51.9700,
+  "address": "Av. Principal, 456, Lajeado, RS",
+  "contact": "(51) 98888-8888",
+  "openingHours": "07:00 - 19:00",
+  "categoryIds": []
+}
+
+### 3.3 Listar todos os pontos de coleta
+GET {{baseUrl}}/collection-points
+Authorization: Bearer {{token}}
+
+### 3.4 Listar pontos de coleta com paginação
+GET {{baseUrl}}/collection-points?page=1&limit=5
+Authorization: Bearer {{token}}
+
+### 3.5 Buscar ponto de coleta por ID
+GET {{baseUrl}}/collection-points/{{createCollectionPoint1.response.body.id}}
+Authorization: Bearer {{token}}
+
+### 3.6 Atualizar ponto de coleta
+PUT {{baseUrl}}/collection-points/{{createCollectionPoint1.response.body.id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Centro de Reciclagem Central - Atualizado",
+  "contact": "(51) 97777-7777",
+  "openingHours": "08:00 - 20:00"
+}
+
+### 3.7 Adicionar categoria ao ponto de coleta
+POST {{baseUrl}}/collection-points/{{createCollectionPoint1.response.body.id}}/categories
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "categoryId": "{{createCategoryEletronicos.response.body.id}}"
+}
+
+### 3.8 Remover categoria do ponto de coleta
+DELETE {{baseUrl}}/collection-points/{{createCollectionPoint1.response.body.id}}/categories/{{createCategoryEletronicos.response.body.id}}
+Authorization: Bearer {{token}}
+
+### 3.9 Excluir ponto de coleta
+DELETE {{baseUrl}}/collection-points/ponto-coleta-uuid-aqui
+Authorization: Bearer {{token}}
+
+###############################################
+# 4. EVENTS - Eventos de Reciclagem
+###############################################
+
+### 4.1 Criar evento - Workshop de Reciclagem
+# @name createEvent1
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Workshop de Reciclagem de Eletrônicos",
+  "description": "Workshop educativo sobre reciclagem de materiais eletrônicos e descarte correto de lixo eletrônico",
+  "lat": -29.4545,
+  "lon": -51.9876,
+  "startAt": "2025-11-15T14:00:00.000Z",
+  "endAt": "2025-11-15T18:00:00.000Z",
+  "categoryIds": []
+}
+
+### 4.2 Criar evento - Mutirão de Coleta
+# @name createEvent2
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Mutirão de Coleta Seletiva",
+  "description": "Mutirão para coleta de materiais recicláveis no bairro",
+  "lat": -29.4600,
+  "lon": -51.9800,
+  "startAt": "2025-11-20T09:00:00.000Z",
+  "endAt": "2025-11-20T12:00:00.000Z",
+  "categoryIds": []
+}
+
+### 4.3 Listar todos os eventos
+GET {{baseUrl}}/events
+Authorization: Bearer {{token}}
+
+### 4.4 Listar eventos com paginação
+GET {{baseUrl}}/events?page=1&limit=5
+Authorization: Bearer {{token}}
+
+### 4.5 Listar meus eventos
+GET {{baseUrl}}/events/my-events
+Authorization: Bearer {{token}}
+
+### 4.6 Listar meus eventos com paginação
+GET {{baseUrl}}/events/my-events?page=1&limit=5
+Authorization: Bearer {{token}}
+
+### 4.7 Buscar evento específico por ID
+GET {{baseUrl}}/events/{{createEvent1.response.body.id}}
+Authorization: Bearer {{token}}
+
+### 4.8 Atualizar evento
+PATCH {{baseUrl}}/events/{{createEvent1.response.body.id}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Workshop de Reciclagem de Eletrônicos - Atualizado",
+  "description": "Workshop educativo sobre reciclagem - Atualizado com nova descrição",
+  "startAt": "2025-11-16T14:00:00.000Z",
+  "endAt": "2025-11-16T18:00:00.000Z"
+}
+
+### 4.9 Deletar evento
+DELETE {{baseUrl}}/events/evento-uuid-aqui
+Authorization: Bearer {{token}}
+
+###############################################
+# 5. ITEMS - Itens para Reciclagem
+###############################################
+
+### 5.1 Criar item - Celular antigo
+# @name createItem1
+POST {{baseUrl}}/items
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "https://example.com/celular-antigo.jpg",
+  "predictedCategoryId": "{{createCategoryEletronicos.response.body.id}}",
+  "confidence": 0.95
+}
+
+### 5.2 Criar item - Garrafa PET
+# @name createItem2
+POST {{baseUrl}}/items
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "https://example.com/garrafa-pet.jpg",
+  "predictedCategoryId": "{{createCategoryPlasticos.response.body.id}}",
+  "confidence": 0.88
+}
+
+### 5.3 Criar item sem categoria (apenas imagem)
+# @name createItem3
+POST {{baseUrl}}/items
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "https://example.com/item-desconhecido.jpg"
+}
+
+### 5.4 Listar todos os itens do usuário
+GET {{baseUrl}}/items
+Authorization: Bearer {{token}}
+
+### 5.5 Listar itens com paginação
+GET {{baseUrl}}/items?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### 5.6 Listar meus itens especificamente
+GET {{baseUrl}}/items/my-items
+Authorization: Bearer {{token}}
+
+### 5.7 Listar meus itens com paginação
+GET {{baseUrl}}/items/my-items?page=1&limit=5
+Authorization: Bearer {{token}}
+
+### 5.8 Buscar item por ID
+GET {{baseUrl}}/items/{{createItem1.response.body.id}}
+Authorization: Bearer {{token}}
+
+### 5.9 Atualizar item
+PATCH {{baseUrl}}/items/{{createItem1.response.body.id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "https://example.com/celular-antigo-atualizado.jpg",
+  "confidence": 0.98
+}
+
+### 5.10 Atualizar predição do item
+PATCH {{baseUrl}}/items/{{createItem1.response.body.id}}/prediction
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "predictedCategoryId": "{{createCategoryEletronicos.response.body.id}}",
+  "confidence": 0.99
+}
+
+### 5.11 Obter estatísticas do usuário
+GET {{baseUrl}}/items/stats
+Authorization: Bearer {{token}}
+
+### 5.12 Obter estatísticas globais (todos os usuários)
+GET {{baseUrl}}/items/all-stats
+Authorization: Bearer {{token}}
+
+### 5.13 Excluir item
+DELETE {{baseUrl}}/items/item-uuid-aqui
+Authorization: Bearer {{token}}
+
+###############################################
+# 6. USERS - Gerenciamento de Usuários
+###############################################
+
+### 6.1 Listar todos os usuários
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+### 6.2 Buscar usuário por ID
+GET {{baseUrl}}/users/usuario-uuid-aqui
+Authorization: Bearer {{token}}
+
+### 6.3 Atualizar usuário
+PATCH {{baseUrl}}/users/usuario-uuid-aqui
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "João Silva Atualizado"
+}
+
+### 6.4 Deletar usuário
+DELETE {{baseUrl}}/users/usuario-uuid-aqui
+Authorization: Bearer {{token}}
+
+###############################################
+# TESTES DE ERRO - Validações
+###############################################
+
+### Erro: Tentar acessar sem autenticação
+GET {{baseUrl}}/categories
+
+### Erro: Criar categoria com nome duplicado
+POST {{baseUrl}}/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Eletrônicos"
+}
+
+### Erro: Criar ponto de coleta com dados inválidos
+POST {{baseUrl}}/collection-points
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "",
+  "lat": 200,
+  "lon": -200,
+  "address": ""
+}
+
+### Erro: Criar item com URL inválida
+POST {{baseUrl}}/items
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "url-invalida",
+  "confidence": 1.5
+}
+
+### Erro: Confidence fora do range (0-1)
+POST {{baseUrl}}/items
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "imageUrl": "https://example.com/image.jpg",
+  "confidence": 1.5
+}
 
