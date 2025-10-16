@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
-import { UpdateUserDto, UpdateProfileDto, ChangePasswordDto } from '../dtos/users.dto';
+import { UpdateUserDto } from '../dtos/users.dto';
 
 @Injectable()
 export class UsersService {
@@ -75,7 +75,7 @@ export class UsersService {
     return this.findOne(id);
   }
 
-  async updateProfile(id: string, updateProfileDto: UpdateProfileDto, currentUserId: string): Promise<User> {
+  async updateProfile(id: string, updateProfileDto: UpdateUserDto, currentUserId: string): Promise<User> {
     // Verificar se o usuário pode atualizar este perfil
     if (id !== currentUserId) {
       throw new ForbiddenException('Você não tem permissão para atualizar este perfil');
@@ -87,7 +87,8 @@ export class UsersService {
 
   async changePassword(
     id: string,
-    changePasswordDto: ChangePasswordDto,
+    currentPassword: string,
+    newPassword: string,
     currentUserId: string
   ): Promise<{ message: string }> {
     // Verificar se o usuário pode alterar esta senha
@@ -105,14 +106,14 @@ export class UsersService {
       throw new BadRequestException('Usuário não possui senha definida (login via Google)');
     }
 
-    const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.passwordHash);
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isCurrentPasswordValid) {
       throw new BadRequestException('Senha atual incorreta');
     }
 
     // Hash da nova senha
     const saltRounds = 10;
-    const newPasswordHash = await bcrypt.hash(changePasswordDto.newPassword, saltRounds);
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
     await this.usersRepository.update(id, { passwordHash: newPasswordHash });
 

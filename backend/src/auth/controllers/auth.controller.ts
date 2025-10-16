@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { RegisterDto, LoginDto } from '../dtos/auth.dto';
+import { Response } from 'express';
+import { GoogleOAuthGuard } from '../guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -19,18 +21,35 @@ export class AuthController {
   }
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth() {
+    // Passport intercepta e redireciona para o Google
+  }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
-    return this.authService.validateOAuthLogin(
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const result = await this.authService.validateOAuthLogin(
       req.user.googleId,
       req.user.email,
       req.user.firstName,
       req.user.lastName
     );
+
+    // Recupera o redirect_uri do state parameter
+    let redirectUri = 'recolheja://';
+    try {
+      if (req.query.state) {
+        const stateData = JSON.parse(Buffer.from(req.query.state as string, 'base64').toString());
+        redirectUri = stateData.redirect_uri || redirectUri;
+      }
+    } catch (error) {
+      console.error('❌ Erro ao decodificar state parameter:', error);
+    }
+
+    const redirectUrl = `${redirectUri}?token=${result.accessToken}`;
+
+    res.redirect(redirectUrl);
   }
 
   @UseGuards(AuthGuard('jwt'))

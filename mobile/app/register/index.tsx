@@ -6,16 +6,35 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  View
+  View,
+  Alert,
+  ActivityIndicator
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '@/src/contexts/AuthContext'
+import { googleAuthService } from '@/src/services/google-auth.service'
+import { useState } from 'react'
 
 export default function Register() {
-  const { handleSetIsAuthentication } = useAuth()
+  const { signIn } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async () => {
-    handleSetIsAuthentication(true)
+    try {
+      setIsLoading(true)
+
+      const token = await googleAuthService.signInWithGoogle()
+
+      await signIn(token)
+    } catch (error: any) {
+      console.error('Erro no login:', error)
+      Alert.alert(
+        'Erro no login',
+        error.message || 'Não foi possível fazer login com o Google. Tente novamente.'
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -63,14 +82,24 @@ export default function Register() {
                   <Text style={styles.text}>contribua para um futuro mais verde.</Text>
                 </View>
 
-                <Button onPress={handleLogin} style={styles.button}>
-                  <Image source={require('@/assets/images/google-logo.svg')} contentFit='contain' style={styles.logoGoogle} />
-                  <Text style={styles.buttonText}>Entrar com o Google</Text>
+                <Button
+                  onPress={handleLogin}
+                  style={styles.button}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color={colors.white} />
+                  ) : (
+                    <>
+                      <Image source={require('@/assets/images/google-logo.svg')} contentFit='contain' style={styles.logoGoogle} />
+                      <Text style={styles.buttonText}>Entrar com o Google</Text>
+                    </>
+                  )}
                 </Button>
 
                 <View style={styles.infoTextContent}>
                   <Text style={styles.infoText}>Criando uma conta,</Text>
-                  <Text style={styles.infoText}>você concorda com todos os nossos termos e condições.</Text>
+                  <Text style={styles.infoText}>você concorda com todos os nossos termos e condições.</Text>
                 </View>
               </SafeAreaView>
             </View>
@@ -111,19 +140,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // leafBase: {
-  //   position: 'absolute',
-  //   zIndex: 0,
-  //   width: '100%',
-  //   height: '60%',
-  // },
-  // leafOverlay: {
-  //   position: 'absolute',
-  //   zIndex: 1,
-  //   transform: [{ rotate: '180deg' }],
-  //   width: '100%',
-  //   height: '60%',
-  // },
   containerRegister: {
     flex: 1,
     backgroundColor: colors.green100,

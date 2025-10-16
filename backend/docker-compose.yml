@@ -24,8 +24,8 @@ services:
     build:
       context: ./.docker
       args:
-        HOST_UID: ${HOST_UID:-1000}
-        HOST_GID: ${HOST_GID:-1000}
+        HOST_UID: ${HOST_UID:-1001}
+        HOST_GID: ${HOST_GID:-1001}
     command: ['npm', 'run', 'start:dev']
     container_name: recolheja_app
     volumes:
@@ -36,7 +36,7 @@ services:
       - db
     env_file:
       - .env
-    user: '${HOST_UID:-1000}:${HOST_GID:-1000}'
+    user: '${HOST_UID:-1001}:${HOST_GID:-1001}'
     networks:
       - recolheja_network
 

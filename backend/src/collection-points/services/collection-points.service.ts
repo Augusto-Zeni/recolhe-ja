@@ -83,7 +83,7 @@ export class CollectionPointsService {
     if (categoryIds) {
       // Remover associações existentes
       await this.collectionPointCategoryRepository.delete({ collectionPointId: id });
-      
+
       // Adicionar novas associações
       if (categoryIds.length > 0) {
         await this.addCategoriesToCollectionPoint(id, categoryIds);
