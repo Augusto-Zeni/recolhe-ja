@@ -56,14 +56,12 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, currentUserId: string): Promise<User> {
-    // Verificar se o usuário pode atualizar este perfil
     if (id !== currentUserId) {
       throw new ForbiddenException('Você não tem permissão para atualizar este usuário');
     }
 
-    await this.findOne(id); // Verifica se o usuário existe
+    await this.findOne(id);
 
-    // Verificar se o email já está em uso por outro usuário
     if (updateUserDto.email) {
       const existingUser = await this.findByEmail(updateUserDto.email);
       if (existingUser && existingUser.id !== id) {
@@ -76,7 +74,6 @@ export class UsersService {
   }
 
   async updateProfile(id: string, updateProfileDto: UpdateUserDto, currentUserId: string): Promise<User> {
-    // Verificar se o usuário pode atualizar este perfil
     if (id !== currentUserId) {
       throw new ForbiddenException('Você não tem permissão para atualizar este perfil');
     }
@@ -91,7 +88,6 @@ export class UsersService {
     newPassword: string,
     currentUserId: string
   ): Promise<{ message: string }> {
-    // Verificar se o usuário pode alterar esta senha
     if (id !== currentUserId) {
       throw new ForbiddenException('Você não tem permissão para alterar a senha deste usuário');
     }
@@ -101,7 +97,6 @@ export class UsersService {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    // Verificar senha atual
     if (!user.passwordHash) {
       throw new BadRequestException('Usuário não possui senha definida (login via Google)');
     }
@@ -111,9 +106,7 @@ export class UsersService {
       throw new BadRequestException('Senha atual incorreta');
     }
 
-    // Hash da nova senha
-    const saltRounds = 10;
-    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+    const newPasswordHash = await bcrypt.hash(newPassword, 6);
 
     await this.usersRepository.update(id, { passwordHash: newPasswordHash });
 
@@ -121,12 +114,11 @@ export class UsersService {
   }
 
   async remove(id: string, currentUserId: string): Promise<{ message: string }> {
-    // Verificar se o usuário pode excluir esta conta
     if (id !== currentUserId) {
       throw new ForbiddenException('Você não tem permissão para excluir este usuário');
     }
 
-    await this.findOne(id); // Verifica se o usuário existe
+    await this.findOne(id);
     await this.usersRepository.delete(id);
 
     return { message: 'Conta excluída com sucesso' };
