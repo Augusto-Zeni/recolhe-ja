@@ -11,7 +11,7 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
     console.log('  Redirect URI from query:', redirectUri);
 
     const options: Record<string, any> = {
-      prompt: 'select_account',
+      prompt: 'select_account consent',
       accessType: 'offline',
       scope: ['profile', 'email'],
     };
