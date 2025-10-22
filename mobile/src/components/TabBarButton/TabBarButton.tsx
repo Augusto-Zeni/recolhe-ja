@@ -1,7 +1,5 @@
-import { Pressable, StyleSheet } from 'react-native'
-import { useEffect } from 'react'
+import { StyleSheet, View } from 'react-native'
 import { icons } from '@/assets/icons'
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 
 type TabBarRouteName = keyof typeof icons
 
@@ -10,70 +8,17 @@ interface TabBarButtonProps {
   label: string
   routeName: TabBarRouteName
   color: string
-  [key: string]: any // Permite props adicionais, como onPress, etc.
 }
 
-const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
-  const { isFocused, label, routeName, color } = props
-
-  const scale = useSharedValue(0)
-
-  useEffect(() => {
-    scale.value = withSpring(
-      typeof isFocused === 'boolean' ? (isFocused ? 1 : 0) : isFocused,
-      { duration: 350 }
-    )
-  }, [scale, isFocused])
-
-  const animatedIconStyle = useAnimatedStyle(() => {
-
-    const scaleValue = interpolate(
-      scale.value,
-      [0, 1],
-      [1, 1.4]
-    )
-    const top = interpolate(
-      scale.value,
-      [0, 1],
-      [0, 8]
-    )
-
-    return {
-      // styles
-      transform: [{ scale: scaleValue }],
-      top
-    }
-  })
-  const animatedTextStyle = useAnimatedStyle(() => {
-
-    const opacity = interpolate(
-      scale.value,
-      [0, 1],
-      [1, 0]
-    )
-
-    return {
-      // styles
-      opacity
-    }
-  })
+const TabBarButton: React.FC<TabBarButtonProps> = ({ routeName, color }) => {
   return (
-    <Pressable {...props} style={styles.container}>
-      <Animated.View style={[animatedIconStyle]}>
-        {
-          icons[routeName]({
-            color
-          })
-        }
-      </Animated.View>
-
-      <Animated.Text style={[{
-        color,
-        fontSize: 11
-      }, animatedTextStyle]}>
-        {label}
-      </Animated.Text>
-    </Pressable>
+    <View style={styles.container}>
+      {
+        icons[routeName]({
+          color
+        })
+      }
+    </View>
   )
 }
 
