@@ -2,13 +2,13 @@ import Constants from 'expo-constants'
 
 const ENV = {
   dev: {
-    apiUrl: 'http://localhost:3000',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL,
   },
   staging: {
-    apiUrl: 'http://localhost:3000',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL_STAGING,
   },
   prod: {
-    apiUrl: 'https://api.recolheja.com',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL_PROD,
   },
 }
 

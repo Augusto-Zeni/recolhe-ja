@@ -49,6 +49,7 @@ export class AuthController {
 
     const redirectUrl = `${redirectUri}?token=${result.accessToken}`;
 
+    res.setHeader('ngrok-skip-browser-warning', 'true');
     res.redirect(redirectUrl);
   }
 

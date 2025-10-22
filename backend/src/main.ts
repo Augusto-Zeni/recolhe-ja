@@ -8,6 +8,18 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
+  // Habilita CORS para permitir requisições do mobile
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  // Middleware para adicionar header que pula a tela de aviso do ngrok
+  app.use((req, res, next) => {
+    res.setHeader('ngrok-skip-browser-warning', 'true');
+    next();
+  });
+
   const config = new DocumentBuilder()
     .setTitle('RecolheJá API')
     .setDescription('API RESTful para o sistema RecolheJá')
