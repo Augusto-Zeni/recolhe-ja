@@ -12,7 +12,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,6 +39,18 @@ services:
     user: '${HOST_UID:-1001}:${HOST_GID:-1001}'
     networks:
       - recolheja_network
+
+  ngrok:
+    image: ngrok/ngrok
+    command: http app:3000
+    ports:
+      - '4040:4040'
+    env_file:
+      - ./.docker/ngrok/.env
+    networks:
+      - recolheja_network
+    depends_on:
+      - app
 
 volumes:
   db_data:
