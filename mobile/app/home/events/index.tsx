@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
-import { StyleSheet, View, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
+import { StyleSheet, View, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as Location from 'expo-location'
+import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/src/components/Text'
 import { EventCard } from '@/src/components/EventCard'
+import { AddEventModal } from '@/src/components/AddEventModal'
 import { eventsService, Event } from '@/src/services/events.service'
 import { colors } from '@/src/styles/colors'
 
@@ -11,6 +14,8 @@ export default function Events() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
 
   const fetchEvents = async () => {
     try {
@@ -38,7 +43,30 @@ export default function Events() {
 
   useEffect(() => {
     fetchEvents()
+    getUserLocation()
   }, [])
+
+  const getUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied')
+        return
+      }
+
+      const location = await Location.getCurrentPositionAsync({})
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      })
+    } catch (error) {
+      console.error('Error getting location:', error)
+    }
+  }
+
+  const handleAddEventSuccess = () => {
+    fetchEvents()
+  }
 
   const handleEventPress = (event: Event) => {
     // Aqui você pode navegar para uma página de detalhes do evento
@@ -66,6 +94,13 @@ export default function Events() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Eventos</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add-circle" size={32} color={colors.green300} />
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -85,6 +120,13 @@ export default function Events() {
           />
         }
       />
+
+      <AddEventModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        userLocation={userLocation}
+        onSuccess={handleAddEventSuccess}
+      />
     </View>
   )
 }
@@ -99,6 +141,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 20,
   },
@@ -107,6 +152,9 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     fontFamily: 'Poppins_700Bold',
     color: colors.black200,
+  },
+  addButton: {
+    padding: 4,
   },
   listContent: {
     padding: 24,

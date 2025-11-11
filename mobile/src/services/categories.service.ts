@@ -15,13 +15,34 @@ export interface CategoriesResponse {
   totalPages: number
 }
 
+// Backend response structure
+interface BackendCategoriesResponse {
+  data: Category[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
 export const categoriesService = {
   async getAll(page = 1, limit = 100): Promise<CategoriesResponse> {
     try {
-      const response = await api.get<CategoriesResponse>('/categories', {
+      const response = await api.get<BackendCategoriesResponse>('/categories', {
         params: { page, limit }
       })
-      return response.data
+
+      console.log('Categories response:', response.data)
+
+      // Map backend response to frontend structure
+      return {
+        items: response.data.data,
+        total: response.data.meta.total,
+        page: response.data.meta.page,
+        limit: response.data.meta.limit,
+        totalPages: response.data.meta.totalPages
+      }
     } catch (error) {
       console.error('Error fetching categories:', error)
       throw error
