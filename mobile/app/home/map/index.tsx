@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
-import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps'
+import { StyleSheet, View, ActivityIndicator } from 'react-native'
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
+import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
 
 export default function Map() {
   const mapRef = useRef<MapView>(null)
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
+  const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // Buscar localização do usuário
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync()
@@ -28,6 +33,25 @@ export default function Map() {
     })()
   }, [])
 
+  // Buscar pontos de coleta
+  useEffect(() => {
+    const fetchCollectionPoints = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await collectionPointsService.getAll(1, 100)
+        setCollectionPoints(response.items)
+      } catch (err) {
+        console.error('Error loading collection points:', err)
+        setError('Não foi possível carregar os pontos de coleta')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCollectionPoints()
+  }, [])
+
   return (
     <View style={styles.container}>
       <MapView
@@ -37,7 +61,24 @@ export default function Map() {
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton
-      />
+      >
+        {collectionPoints.map((point) => (
+          <Marker
+            key={point.id}
+            coordinate={{
+              latitude: point.lat,
+              longitude: point.lon,
+            }}
+            title={point.name}
+            description={point.address}
+          />
+        ))}
+      </MapView>
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      )}
     </View>
   )
 }
@@ -55,5 +96,21 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 24,
     right: 24,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 20,
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 })
