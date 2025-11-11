@@ -33,7 +33,8 @@ export class AuthController {
       req.user.googleId,
       req.user.email,
       req.user.firstName,
-      req.user.lastName
+      req.user.lastName,
+      req.user.photoUrl
     );
 
     // Recupera o redirect_uri do state parameter

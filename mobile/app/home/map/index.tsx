@@ -3,6 +3,7 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
 import { PopupMenu } from '@/src/components/PopupMenu/PopupMenu'
 import { AddCollectionPointModal } from '@/src/components/AddCollectionPointModal'
@@ -53,6 +54,7 @@ const customMapStyle = [
 export default function Map() {
   const mapRef = useRef<MapView>(null)
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([])
@@ -150,6 +152,13 @@ export default function Map() {
               value: 'add-collection-point',
               onPress: () => {
                 setModalVisible(true)
+              },
+            },
+            {
+              label: 'Perfil',
+              value: 'profile',
+              onPress: () => {
+                router.push('/profile')
               },
             },
           ]}

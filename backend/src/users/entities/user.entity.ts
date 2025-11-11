@@ -16,6 +16,9 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Column({ nullable: true })
+  photoUrl: string;
+
   @Exclude()
   @Column({ nullable: true })
   passwordHash: string;

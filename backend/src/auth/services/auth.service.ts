@@ -45,20 +45,31 @@ export class AuthService {
     return { accessToken: this.jwtService.sign(payload) };
   }
 
-  async validateOAuthLogin(googleId: string, email: string, firstName: string, lastName: string): Promise<any> {
+  async validateOAuthLogin(googleId: string, email: string, firstName: string, lastName: string, photoUrl?: string): Promise<any> {
     let user = await this.usersRepository.findOne({ where: { googleId } });
     if (!user) {
       user = await this.usersRepository.findOne({ where: { email } });
       if (user) {
         user.googleId = googleId;
-        await this.usersRepository.save(user);
+        if (photoUrl) {
+          user.photoUrl = photoUrl;
+        }
+        user = await this.usersRepository.save(user);
       } else {
-        user = this.usersRepository.create({
+        const newUserData = {
           googleId,
           email,
           name: `${firstName} ${lastName}`,
-        });
-        await this.usersRepository.save(user);
+          ...(photoUrl && { photoUrl }),
+        };
+        const newUser = this.usersRepository.create(newUserData);
+        user = await this.usersRepository.save(newUser);
+      }
+    } else {
+      // Atualizar a foto se mudou
+      if (photoUrl && user.photoUrl !== photoUrl) {
+        user.photoUrl = photoUrl;
+        user = await this.usersRepository.save(user);
       }
     }
     const payload = { email: user.email, sub: user.id };

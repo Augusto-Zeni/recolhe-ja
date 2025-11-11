@@ -84,6 +84,17 @@ export const AddCollectionPointModal = ({
     return Object.keys(newErrors).length === 0
   }
 
+  const resetForm = () => {
+    setName('')
+    setAddress('')
+    setContact('')
+    setOpeningHours('')
+    setSelectedCategoryIds([])
+    setErrors({})
+    setLoading(false)
+    setLoadingCategories(false)
+  }
+
   const handleSubmit = async () => {
     if (!validate()) {
       return
@@ -125,16 +136,8 @@ export const AddCollectionPointModal = ({
 
       Alert.alert('Sucesso', 'Ponto de coleta criado com sucesso!')
 
-      // Reset form
-      setName('')
-      setAddress('')
-      setContact('')
-      setOpeningHours('')
-      setSelectedCategoryIds([])
-      setErrors({})
-
       onSuccess?.()
-      onClose()
+      handleClose()
     } catch (error: any) {
       console.error('Error creating collection point:', error)
 
@@ -153,10 +156,15 @@ export const AddCollectionPointModal = ({
     }
   }
 
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
   return (
     <CustomModal
       visible={visible}
-      onClose={onClose}
+      onClose={handleClose}
       title="Adicionar Ponto de Coleta"
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -168,6 +176,7 @@ export const AddCollectionPointModal = ({
             placeholder="Ex: Posto de Reciclagem Central"
             error={errors.name}
             containerStyle={styles.inputContainer}
+            inputStyle={styles.inputStyle}
           />
 
           <Input
@@ -177,6 +186,7 @@ export const AddCollectionPointModal = ({
             placeholder="Ex: Rua Principal, 123"
             error={errors.address}
             containerStyle={styles.inputContainer}
+            inputStyle={styles.inputStyle}
           />
 
           <Input
@@ -186,6 +196,7 @@ export const AddCollectionPointModal = ({
             placeholder="Ex: (11) 98765-4321"
             keyboardType="phone-pad"
             containerStyle={styles.inputContainer}
+            inputStyle={styles.inputStyle}
           />
 
           <Input
@@ -194,6 +205,7 @@ export const AddCollectionPointModal = ({
             onChangeText={setOpeningHours}
             placeholder="Ex: Seg-Sex 8h-18h"
             containerStyle={styles.inputContainer}
+            inputStyle={styles.inputStyle}
           />
 
           <View style={styles.categoriesSection}>
@@ -266,6 +278,10 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 8,
+  },
+  inputStyle: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
   },
   categoriesSection: {
     marginBottom: 8,

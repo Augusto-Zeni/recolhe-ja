@@ -5,12 +5,12 @@ import {
   Dimensions,
   Modal,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   type ModalProps,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { Text } from '../Text'
 
 const { width, height } = Dimensions.get('window')
 
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.gray100,
+    color: colors.black200,
   },
   closeButton: {
     padding: 4,
