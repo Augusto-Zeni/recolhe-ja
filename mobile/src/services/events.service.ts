@@ -89,8 +89,6 @@ export const eventsService = {
         params: { page, limit }
       })
 
-      console.log('Events response:', response.data)
-
       // Map backend response to frontend structure
       return {
         items: response.data.data,

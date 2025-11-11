@@ -33,8 +33,6 @@ export const categoriesService = {
         params: { page, limit }
       })
 
-      console.log('Categories response:', response.data)
-
       // Map backend response to frontend structure
       return {
         items: response.data.data,
