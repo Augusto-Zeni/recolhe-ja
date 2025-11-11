@@ -131,6 +131,7 @@ export default function Map() {
             }}
             title={point.name}
             description={point.address}
+            pinColor={colors.green300}
           />
         ))}
       </MapView>
