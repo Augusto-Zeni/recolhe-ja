@@ -36,6 +36,16 @@ export interface CollectionPointsResponse {
   totalPages: number
 }
 
+export interface CreateCollectionPointDto {
+  name: string
+  lat: number
+  lon: number
+  address: string
+  contact?: string
+  openingHours?: string
+  categoryIds?: string[]
+}
+
 export const collectionPointsService = {
   async getAll(page = 1, limit = 100): Promise<CollectionPointsResponse> {
     try {
@@ -55,6 +65,16 @@ export const collectionPointsService = {
       return response.data
     } catch (error) {
       console.error(`Error fetching collection point ${id}:`, error)
+      throw error
+    }
+  },
+
+  async create(data: CreateCollectionPointDto): Promise<CollectionPoint> {
+    try {
+      const response = await api.post<CollectionPoint>('/collection-points', data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating collection point:', error)
       throw error
     }
   }

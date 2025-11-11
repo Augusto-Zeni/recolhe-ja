@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, View, ActivityIndicator } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
-import { DropdownMenu } from '@/src/components/DropdownMenu'
 import { PopupMenu } from '@/src/components/PopupMenu/PopupMenu'
+import { AddCollectionPointModal } from '@/src/components/AddCollectionPointModal'
 import { colors } from '@/src/styles/colors'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -51,10 +52,12 @@ const customMapStyle = [
 
 export default function Map() {
   const mapRef = useRef<MapView>(null)
+  const insets = useSafeAreaInsets()
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   // Buscar localização do usuário
   useEffect(() => {
@@ -73,29 +76,35 @@ export default function Map() {
         longitudeDelta: 0.0421,
       }
 
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      })
       setInitialRegion(region)
       mapRef.current?.animateToRegion(region, 1000)
     })()
   }, [])
 
   // Buscar pontos de coleta
-  useEffect(() => {
-    const fetchCollectionPoints = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await collectionPointsService.getAll(1, 100)
-        setCollectionPoints(response.items)
-      } catch (err) {
-        console.error('Error loading collection points:', err)
-        setError('Não foi possível carregar os pontos de coleta')
-      } finally {
-        setLoading(false)
-      }
+  const fetchCollectionPoints = async () => {
+    try {
+      setLoading(true)
+      const response = await collectionPointsService.getAll(1, 100)
+      setCollectionPoints(response.items)
+    } catch (err) {
+      console.error('Error loading collection points:', err)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchCollectionPoints()
   }, [])
+
+  const handleAddCollectionPointSuccess = () => {
+    fetchCollectionPoints()
+  }
 
   return (
     <View style={styles.container}>
@@ -126,20 +135,20 @@ export default function Map() {
         ))}
       </MapView>
       {loading && (
-        <View style={styles.loadingContainer}>
+        <View style={[styles.loadingContainer, { top: insets.top }]}>
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
       )}
 
-      <View style={styles.popupMenuContainer}>
+      <View style={[styles.popupMenuContainer, { top: insets.top }]}>
         <PopupMenu
           icon={<Ionicons name="menu" size={24} color={colors.black200} />}
           options={[
             {
-              label: 'Opção de Teste',
-              value: 'opcao-de-teste',
+              label: 'Adicionar Ponto de Coleta',
+              value: 'add-collection-point',
               onPress: () => {
-                console.log('Opção de teste clicada')
+                setModalVisible(true)
               },
             },
           ]}
@@ -149,6 +158,13 @@ export default function Map() {
           }}
         />
       </View>
+
+      <AddCollectionPointModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        userLocation={userLocation}
+        onSuccess={handleAddCollectionPointSuccess}
+      />
     </View>
   )
 }
@@ -169,7 +185,6 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     position: 'absolute',
-    top: 20,
     alignSelf: 'center',
     backgroundColor: 'white',
     padding: 15,
@@ -185,7 +200,6 @@ const styles = StyleSheet.create({
   },
   popupMenuContainer: {
     position: 'absolute',
-    top: 20,
     right: 20,
     backgroundColor: 'white',
     borderRadius: 25,

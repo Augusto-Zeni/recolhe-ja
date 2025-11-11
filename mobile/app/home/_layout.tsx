@@ -10,13 +10,15 @@ const _layout = () => {
       <Tabs.Screen
         name="map/index"
         options={{
-          title: 'Map'
+          title: 'Map',
+          headerShown: false
         }}
       />
       <Tabs.Screen
         name="events/index"
         options={{
-          title: 'Events'
+          title: 'Events',
+          headerShown: false
         }}
       />
     </Tabs>
