@@ -124,18 +124,24 @@ export default function Map() {
         showsPointsOfInterest={false}
         customMapStyle={customMapStyle}
       >
-        {collectionPoints.map((point) => (
-          <Marker
-            key={point.id}
-            coordinate={{
-              latitude: point.lat,
-              longitude: point.lon,
-            }}
-            title={point.name}
-            description={point.address}
-            pinColor={colors.green300}
-          />
-        ))}
+        {collectionPoints.map((point) => {
+          const categories = point.collectionPointCategories
+            ?.map((cpc) => cpc.category.name)
+            .join(', ') || 'Sem categoria'
+
+          return (
+            <Marker
+              key={point.id}
+              coordinate={{
+                latitude: point.lat,
+                longitude: point.lon,
+              }}
+              title={point.name}
+              description={`${point.address}\nCategorias: ${categories}`}
+              pinColor={colors.green300}
+            />
+          )
+        })}
       </MapView>
       {loading && (
         <View style={[styles.loadingContainer, { top: insets.top }]}>
