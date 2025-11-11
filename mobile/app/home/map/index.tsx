@@ -4,6 +4,47 @@ import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
 
+// Estilo customizado para remover TODOS os POIs do Google Maps
+const customMapStyle = [
+  {
+    featureType: 'poi',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.business',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.attraction',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.government',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.medical',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.park',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.place_of_worship',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.school',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.sports_complex',
+    stylers: [{ visibility: 'off' }],
+  },
+]
+
 export default function Map() {
   const mapRef = useRef<MapView>(null)
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
@@ -61,6 +102,12 @@ export default function Map() {
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton
+        showsCompass={false}
+        showsScale={false}
+        showsTraffic={false}
+        showsBuildings={false}
+        showsPointsOfInterest={false}
+        customMapStyle={customMapStyle}
       >
         {collectionPoints.map((point) => (
           <Marker
