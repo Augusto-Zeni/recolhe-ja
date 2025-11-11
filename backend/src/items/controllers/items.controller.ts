@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { ItemsService } from '../services/items.service';
 import { CreateItemDto, UpdateItemDto, UpdatePredictionDto } from '../dtos/items.dto';
 
@@ -8,6 +11,33 @@ import { CreateItemDto, UpdateItemDto, UpdatePredictionDto } from '../dtos/items
 @UseGuards(AuthGuard('jwt'))
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+          callback(null, filename);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+          return callback(new Error('Apenas arquivos de imagem são permitidos!'), false);
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
+    return this.itemsService.createFromUpload(file, req.user.id);
+  }
 
   @Post()
   create(@Body(new ZodValidationPipe()) createItemDto: CreateItemDto, @Req() req: any) {

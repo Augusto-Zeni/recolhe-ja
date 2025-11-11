@@ -6,11 +6,13 @@ import { icons } from '@/assets/icons'
 import { colors } from '@/src/styles/colors'
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import { Feather } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const primaryColor = colors.green100
   const grayColor = colors.gray200
   const { width } = useWindowDimensions()
+  const router = useRouter()
 
   const validRoutes = useMemo(() =>
     state.routes.filter(route => !['_sitemap', '+not-found'].includes(route.name) && route.name in icons),
@@ -51,7 +53,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   })
 
   const handleCameraPress = () => {
-    console.log('Botão de câmera pressionado!')
+    router.push('/camera')
   }
 
   const renderTabItems = () => {

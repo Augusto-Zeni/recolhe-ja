@@ -14,7 +14,9 @@
         "googleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY"
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Este app precisa acessar sua localização para mostrar sua posição no mapa."
+        "NSLocationWhenInUseUsageDescription": "Este app precisa acessar sua localização para mostrar sua posição no mapa.",
+        "NSCameraUsageDescription": "Este app precisa acessar sua câmera para tirar fotos dos objetos.",
+        "NSPhotoLibraryUsageDescription": "Este app precisa acessar suas fotos para selecionar imagens."
       }
     },
     "android": {
@@ -30,7 +32,10 @@
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {
@@ -54,6 +59,18 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Este app precisa acessar sua localização para mostrar sua posição no mapa."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Este app precisa acessar sua câmera para tirar fotos dos objetos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Este app precisa acessar suas fotos para selecionar imagens."
         }
       ]
     ],

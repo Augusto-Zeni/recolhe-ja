@@ -21,6 +21,25 @@ export class ItemsService {
     return this.findOne(savedItem.id);
   }
 
+  async createFromUpload(file: Express.Multer.File, userId: string) {
+    if (!file) {
+      throw new Error('Nenhum arquivo foi enviado');
+    }
+
+    // Construir a URL da imagem
+    // Em produção, você pode usar um serviço de armazenamento como S3, Cloudinary, etc.
+    // Por enquanto, usaremos o caminho local
+    const imageUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/${file.filename}`;
+
+    const item = this.itemRepository.create({
+      imageUrl,
+      userId,
+    });
+
+    const savedItem = await this.itemRepository.save(item);
+    return this.findOne(savedItem.id);
+  }
+
   async findAll(page = 1, limit = 10, userId?: string) {
     const queryBuilder = this.itemRepository
       .createQueryBuilder('item')
