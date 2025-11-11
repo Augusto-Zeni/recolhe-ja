@@ -9,6 +9,7 @@ import 'react-native-reanimated'
 import { Stack } from 'expo-router'
 import { AuthGuard } from '@/src/components/AuthGuard/AuthGuard'
 import { AuthProvider } from '@/src/contexts/AuthContext'
+import { MenuProvider } from 'react-native-popup-menu'
 
 export default function RootLayout() {
   let [fontsLoaded] = useFonts({
@@ -24,10 +25,12 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <AuthGuard>
-        <Stack screenOptions={{ headerShown: false }} />
-      </AuthGuard>
-    </AuthProvider>
+    <MenuProvider>
+      <AuthProvider>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }} />
+        </AuthGuard>
+      </AuthProvider>
+    </MenuProvider>
   )
 }

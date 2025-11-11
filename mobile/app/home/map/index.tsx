@@ -3,6 +3,10 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
+import { DropdownMenu } from '@/src/components/DropdownMenu'
+import { PopupMenu } from '@/src/components/PopupMenu/PopupMenu'
+import { colors } from '@/src/styles/colors'
+import { Ionicons } from '@expo/vector-icons'
 
 // Estilo customizado para remover TODOS os POIs do Google Maps
 const customMapStyle = [
@@ -126,6 +130,25 @@ export default function Map() {
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
       )}
+
+      <View style={styles.popupMenuContainer}>
+        <PopupMenu
+          icon={<Ionicons name="menu" size={24} color={colors.black200} />}
+          options={[
+            {
+              label: 'Opção de Teste',
+              value: 'opcao-de-teste',
+              onPress: () => {
+                console.log('Opção de teste clicada')
+              },
+            },
+          ]}
+          menuStyles={{
+            optionsContainer: { paddingVertical: 8, backgroundColor: colors.white, borderRadius: 12 },
+            optionText: { color: colors.black200  , fontSize: 16 },
+          }}
+        />
+      </View>
     </View>
   )
 }
@@ -151,6 +174,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 15,
     borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  popupMenuContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 25,
+    padding: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
