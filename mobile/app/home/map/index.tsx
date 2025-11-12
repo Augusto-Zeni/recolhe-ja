@@ -174,6 +174,12 @@ export default function Map() {
         showsBuildings={false}
         showsPointsOfInterest={false}
         customMapStyle={customMapStyle}
+        mapPadding={{
+          top: 0,
+          right: 0,
+          bottom: 80,
+          left: 0,
+        }}
       >
         {collectionPoints.map((point) => {
           const categories = point.collectionPointCategories
