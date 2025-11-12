@@ -11,4 +11,14 @@ export const colors = {
   gray200: '#9AA29A',
   gray400: '#6B6B6B',
   gray600: '#4A4A4A',
+  // Event marker colors
+  event: {
+    purple: '#9B59B6',
+    orange: '#E67E22',
+    blue: '#3498DB',
+    pink: '#E91E63',
+    yellow: '#F39C12',
+    teal: '#1ABC9C',
+    indigo: '#6C5CE7',
+  }
 }

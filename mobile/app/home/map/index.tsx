@@ -5,6 +5,7 @@ import * as Location from 'expo-location'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
+import { eventsService, Event } from '@/src/services/events.service'
 import { PopupMenu } from '@/src/components/PopupMenu/PopupMenu'
 import { AddCollectionPointModal } from '@/src/components/AddCollectionPointModal'
 import { colors } from '@/src/styles/colors'
@@ -58,6 +59,7 @@ export default function Map() {
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
 
@@ -100,9 +102,58 @@ export default function Map() {
     }
   }
 
+  // Buscar eventos
+  const fetchEvents = async () => {
+    try {
+      const response = await eventsService.getAll(1, 100)
+      setEvents(response.items)
+    } catch (err) {
+      console.error('Error loading events:', err)
+    }
+  }
+
   useEffect(() => {
     fetchCollectionPoints()
+    fetchEvents()
   }, [])
+
+  // Função para obter a cor do marcador baseado nas categorias do evento
+  const getEventMarkerColor = (event: Event): string => {
+    if (!event.eventCategories || event.eventCategories.length === 0) {
+      return colors.event.purple // cor padrão para eventos sem categoria
+    }
+
+    // Mapear categorias para cores específicas
+    const categoryName = event.eventCategories[0]?.category?.name?.toLowerCase() || ''
+
+    // Definir esquema de cores baseado em categorias comuns
+    if (categoryName.includes('papel') || categoryName.includes('papelão')) {
+      return colors.event.blue
+    } else if (categoryName.includes('plástico')) {
+      return colors.event.yellow
+    } else if (categoryName.includes('vidro')) {
+      return colors.event.teal
+    } else if (categoryName.includes('metal') || categoryName.includes('alumínio')) {
+      return colors.event.orange
+    } else if (categoryName.includes('orgânico') || categoryName.includes('compostagem')) {
+      return colors.event.pink
+    } else if (categoryName.includes('eletrônico') || categoryName.includes('pilha') || categoryName.includes('bateria')) {
+      return colors.event.indigo
+    } else {
+      // Alternar entre cores para categorias diferentes
+      const colorPalette = [
+        colors.event.purple,
+        colors.event.orange,
+        colors.event.blue,
+        colors.event.pink,
+        colors.event.yellow,
+        colors.event.teal,
+        colors.event.indigo,
+      ]
+      const index = event.eventCategories[0]?.categoryId?.charCodeAt(0) || 0
+      return colorPalette[index % colorPalette.length]
+    }
+  }
 
   const handleAddCollectionPointSuccess = () => {
     fetchCollectionPoints()
@@ -131,7 +182,7 @@ export default function Map() {
 
           return (
             <Marker
-              key={point.id}
+              key={`collection-${point.id}`}
               coordinate={{
                 latitude: point.lat,
                 longitude: point.lon,
@@ -139,6 +190,41 @@ export default function Map() {
               title={point.name}
               description={`${point.address}\nCategorias: ${categories}`}
               pinColor={colors.green300}
+            />
+          )
+        })}
+
+        {events.map((event) => {
+          const categories = event.eventCategories
+            ?.map((ec) => ec.category.name)
+            .join(', ') || 'Sem categoria'
+
+          const startDate = new Date(event.startAt).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+
+          const endDate = new Date(event.endAt).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+
+          return (
+            <Marker
+              key={`event-${event.id}`}
+              coordinate={{
+                latitude: event.lat,
+                longitude: event.lon,
+              }}
+              title={`🎯 ${event.title}`}
+              description={`${event.description}\n\nCategorias: ${categories}\nInício: ${startDate}\nFim: ${endDate}`}
+              pinColor={getEventMarkerColor(event)}
             />
           )
         })}
