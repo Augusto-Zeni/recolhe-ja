@@ -246,13 +246,6 @@ export default function Map() {
                 setModalVisible(true)
               },
             },
-            {
-              label: 'Perfil',
-              value: 'profile',
-              onPress: () => {
-                router.push('/profile')
-              },
-            },
           ]}
           menuStyles={{
             optionsContainer: { paddingVertical: 8, backgroundColor: colors.white, borderRadius: 12 },

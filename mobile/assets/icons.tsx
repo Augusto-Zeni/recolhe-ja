@@ -5,5 +5,7 @@ type FeatherIconProps = Omit<ComponentProps<typeof Feather>, 'name' | 'size'>
 
 export const icons = {
   'map/index': (props: FeatherIconProps) => <Feather {...props} name='map' size={26} />,
+  'items/index': (props: FeatherIconProps) => <Feather {...props} name='image' size={26} />,
   'events/index': (props: FeatherIconProps) => <Feather {...props} name='calendar' size={26} />,
+  'profile/index': (props: FeatherIconProps) => <Feather {...props} name='user' size={26} />,
 }

@@ -21,18 +21,10 @@ export default function Profile() {
     }
   }
 
-  const handleGoBack = () => {
-    router.back()
-  }
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.black200} />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Perfil</Text>
-        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -100,23 +92,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray100,
   },
-  backButton: {
-    padding: 8,
-  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: 'Poppins_700Bold',
     color: colors.black200,
-  },
-  placeholder: {
-    width: 40,
   },
   content: {
     flex: 1,

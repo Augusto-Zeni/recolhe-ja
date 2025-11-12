@@ -15,9 +15,23 @@ const _layout = () => {
         }}
       />
       <Tabs.Screen
+        name="items/index"
+        options={{
+          title: 'Items',
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
         name="events/index"
         options={{
           title: 'Events',
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
+        name="profile/index"
+        options={{
+          title: 'Profile',
           headerShown: false
         }}
       />

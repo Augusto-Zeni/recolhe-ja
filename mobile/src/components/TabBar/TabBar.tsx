@@ -21,7 +21,9 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
 
   const tabBarMargin = 20 * 2
   const tabBarWidth = width - tabBarMargin
-  const sideWidth = tabBarWidth / 2
+  const numTabs = validRoutes.length
+  // Dividir por numTabs + 1 para ter espaço para o botão da câmera
+  const tabWidth = tabBarWidth / (numTabs + 1)
   const indicatorMargin = 8
 
   const activeTabIndex = useMemo(() => {
@@ -30,21 +32,20 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   }, [state.index, state.routes, validRoutes])
 
   const getIndicatorPosition = useCallback((tabIndex: number) => {
-    if (tabIndex === 0) {
-      return (sideWidth / 2) - ((sideWidth - indicatorMargin * 2) / 2)
-    } else {
-      return sideWidth + (sideWidth / 2) - ((sideWidth - indicatorMargin * 2) / 2)
-    }
-  }, [sideWidth])
+    // Ajustar índice para considerar o espaço da câmera no meio
+    // Se a tab estiver depois da posição 1 (índice 2 ou mais), adicionar 1 ao índice para pular o espaço da câmera
+    const adjustedIndex = tabIndex >= 2 ? tabIndex + 1 : tabIndex
+    return tabWidth * adjustedIndex + (tabWidth / 2) - ((tabWidth - indicatorMargin * 2) / 2)
+  }, [tabWidth])
 
-  const indicatorWidth = sideWidth - indicatorMargin * 2
+  const indicatorWidth = tabWidth - indicatorMargin * 2
   const translateX = useSharedValue(getIndicatorPosition(activeTabIndex))
 
   useEffect(() => {
     translateX.value = withSpring(getIndicatorPosition(activeTabIndex), {
       stiffness: 850,
     })
-  }, [activeTabIndex, sideWidth, translateX, indicatorMargin, getIndicatorPosition])
+  }, [activeTabIndex, tabWidth, translateX, indicatorMargin, getIndicatorPosition])
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     return {
@@ -58,6 +59,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
 
   const renderTabItems = () => {
     const items: React.ReactElement[] = []
+    let validRouteIndex = 0
 
     state.routes.forEach((route, index) => {
       const { options } = descriptors[route.key]
@@ -94,8 +96,15 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
         })
       }
 
+      // Inserir espaço para o botão da câmera após a segunda tab
+      if (validRouteIndex === 2) {
+        items.push(
+          <View key="camera-space" style={[styles.tabbarItemContainer, { width: tabWidth }]} />
+        )
+      }
+
       items.push(
-        <View key={route.name} style={[styles.tabbarItemContainer, { width: sideWidth }]}>
+        <View key={route.name} style={[styles.tabbarItemContainer, { width: tabWidth }]}>
           <Pressable
             onPress={onPress}
             onLongPress={onLongPress}
@@ -110,6 +119,8 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
           </Pressable>
         </View>
       )
+
+      validRouteIndex++
     })
 
     return items
@@ -174,7 +185,7 @@ const styles = StyleSheet.create({
   cameraButtonContainerAbsolute: {
     position: 'absolute',
     left: '50%',
-    marginLeft: -35, // Metade da largura do botão (70/2)
+    marginLeft: -42.5, // Metade da largura do botão (85/2)
     alignItems: 'center',
     justifyContent: 'center',
   },
