@@ -32,8 +32,6 @@ export const AddEventModal = ({
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState(new Date())
   const [endDate, setEndDate] = useState(new Date(Date.now() + 3600000)) // 1 hour later
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false)
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false)
   const [showEndDatePicker, setShowEndDatePicker] = useState(false)
   const [showEndTimePicker, setShowEndTimePicker] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
@@ -90,7 +88,6 @@ export const AddEventModal = ({
   }
 
   const onStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(Platform.OS === 'ios')
     if (selectedDate) {
       const newStartDate = new Date(startDate)
       newStartDate.setFullYear(selectedDate.getFullYear())
@@ -107,7 +104,6 @@ export const AddEventModal = ({
   }
 
   const onStartTimeChange = (event: any, selectedTime?: Date) => {
-    setShowStartTimePicker(Platform.OS === 'ios')
     if (selectedTime) {
       const newStartDate = new Date(startDate)
       newStartDate.setHours(selectedTime.getHours())
@@ -180,8 +176,6 @@ export const AddEventModal = ({
     setErrors({})
     setLoading(false)
     setLoadingCategories(false)
-    setShowStartDatePicker(false)
-    setShowStartTimePicker(false)
     setShowEndDatePicker(false)
     setShowEndTimePicker(false)
   }
@@ -287,83 +281,49 @@ export const AddEventModal = ({
           <View style={styles.dateTimeSection}>
             <Text style={styles.label}>Data e Hora de Início *</Text>
             <View style={styles.dateTimeRow}>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={() => setShowStartDatePicker(true)}
-              >
-                <Text style={styles.dateTimeButtonText}>{formatDate(startDate)}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={() => setShowStartTimePicker(true)}
-              >
-                <Text style={styles.dateTimeButtonText}>{formatTime(startDate)}</Text>
-              </TouchableOpacity>
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={onStartDateChange}
+                minimumDate={new Date()}
+              />
+
+              <DateTimePicker
+                value={startDate}
+                mode="time"
+                display="default"
+                onChange={onStartTimeChange}
+              />
             </View>
             {errors.startDate && (
               <Text style={styles.errorText}>{errors.startDate}</Text>
             )}
           </View>
 
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              onChange={onStartDateChange}
-              minimumDate={new Date()}
-            />
-          )}
-
-          {showStartTimePicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="time"
-              display="default"
-              onChange={onStartTimeChange}
-            />
-          )}
-
           {/* End Date and Time */}
           <View style={styles.dateTimeSection}>
             <Text style={styles.label}>Data e Hora de Término *</Text>
             <View style={styles.dateTimeRow}>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={() => setShowEndDatePicker(true)}
-              >
-                <Text style={styles.dateTimeButtonText}>{formatDate(endDate)}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dateTimeButton}
-                onPress={() => setShowEndTimePicker(true)}
-              >
-                <Text style={styles.dateTimeButtonText}>{formatTime(endDate)}</Text>
-              </TouchableOpacity>
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={onEndDateChange}
+                minimumDate={startDate}
+              />
+
+              <DateTimePicker
+                value={endDate}
+                mode="time"
+                display="default"
+                onChange={onEndTimeChange}
+              />
             </View>
             {errors.endDate && (
               <Text style={styles.errorText}>{errors.endDate}</Text>
             )}
           </View>
-
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              onChange={onEndDateChange}
-              minimumDate={startDate}
-            />
-          )}
-
-          {showEndTimePicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="time"
-              display="default"
-              onChange={onEndTimeChange}
-            />
-          )}
 
           {/* Categories */}
           <View style={styles.categoriesSection}>
