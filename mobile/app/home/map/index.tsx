@@ -3,7 +3,7 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import * as Location from 'expo-location'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
 import { eventsService, Event } from '@/src/services/events.service'
 import { PopupMenu } from '@/src/components/PopupMenu/PopupMenu'
@@ -55,14 +55,14 @@ const customMapStyle = [
 export default function Map() {
   const mapRef = useRef<MapView>(null)
   const insets = useSafeAreaInsets()
-  const router = useRouter()
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [collectionPoints, setCollectionPoints] = useState<CollectionPoint[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
-
+  const { latitudeFromEventList, longitudeFromEventList } = useLocalSearchParams();
+  
   // Buscar localização do usuário
   useEffect(() => {
     (async () => {
@@ -72,22 +72,28 @@ export default function Map() {
         return
       }
 
-      const location = await Location.getCurrentPositionAsync({})
+      const isFromEventList = latitudeFromEventList !== undefined && longitudeFromEventList !== undefined;    
+      const location = !isFromEventList ?  await Location.getCurrentPositionAsync({}) : null;
+      
       const region: Region = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: isFromEventList ? Number(latitudeFromEventList) : location!.coords.latitude,
+        longitude: isFromEventList ? Number(longitudeFromEventList) : location!.coords.longitude,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       }
 
       setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: isFromEventList ? Number(latitudeFromEventList) : location!.coords.latitude,
+        longitude: isFromEventList ? Number(longitudeFromEventList) : location!.coords.longitude,
       })
+
       setInitialRegion(region)
-      mapRef.current?.animateToRegion(region, 1000)
+      
+     setTimeout(() => {
+        mapRef.current?.animateToRegion(region, 1000)
+     }, 100)
     })()
-  }, [])
+  }, [latitudeFromEventList, longitudeFromEventList])
 
   // Buscar pontos de coleta
   const fetchCollectionPoints = async () => {

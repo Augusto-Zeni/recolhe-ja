@@ -8,8 +8,10 @@ import { EventCard } from '@/src/components/EventCard'
 import { AddEventModal } from '@/src/components/AddEventModal'
 import { eventsService, Event } from '@/src/services/events.service'
 import { colors } from '@/src/styles/colors'
+import { useRouter } from "expo-router";
 
 export default function Events() {
+  const router = useRouter();
   const insets = useSafeAreaInsets()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,8 +71,10 @@ export default function Events() {
   }
 
   const handleEventPress = (event: Event) => {
-    // Aqui você pode navegar para uma página de detalhes do evento
-    console.log('Event pressed:', event.id)
+    router.push({
+      pathname: "/home/map",
+      params: { latitudeFromEventList: event.lat, longitudeFromEventList: event.lon },
+    });
   }
 
   const renderEmptyList = () => (
