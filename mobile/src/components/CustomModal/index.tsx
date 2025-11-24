@@ -57,30 +57,29 @@ export const CustomModal = ({
       onRequestClose={onClose}
     >
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-        <TouchableOpacity 
-          style={styles.overlayTouch} 
-          activeOpacity={1} 
-          onPress={onClose}
-        >
-          <View style={styles.modalContainer}>
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-              <View style={styles.modalContent}>
-                {/* Header do Modal */}
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{title}</Text>
-                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                    <Ionicons name="close-circle" size={28} color={colors.gray100} />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Conteúdo do Modal */}
-                <View style={styles.modalBody}>
-                  {children}
-                </View>
+        <View style={styles.overlayTouch}>
+          <TouchableOpacity 
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1} 
+            onPress={onClose}
+          />
+          <View style={styles.modalContainer} pointerEvents="box-none">
+            <View style={styles.modalContent}>
+              {/* Header do Modal */}
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{title}</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Ionicons name="close-circle" size={28} color={colors.gray100} />
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+
+              {/* Conteúdo do Modal */}
+              <View style={styles.modalBody}>
+                {children}
+              </View>
+            </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </Animated.View>
     </Modal>
   )
@@ -93,6 +92,7 @@ const styles = StyleSheet.create({
   },
   overlayTouch: {
     flex: 1,
+    position: 'relative',
   },
   modalContainer: {
     flex: 1,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 15,
     width: width * 0.9,
-    maxHeight: height * 0.8,
+    maxHeight: height * 0.85,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -113,6 +113,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    overflow: 'hidden',   
+    minHeight: height * 0.5, 
   },
   modalHeader: {
     flexDirection: 'row',
@@ -132,6 +134,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalBody: {
-    padding: 20,
+    flex: 1,    
+    maxHeight: height * 0.75,
   },
 })

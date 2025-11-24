@@ -31,9 +31,7 @@ export const AddEventModal = ({
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState(new Date())
-  const [endDate, setEndDate] = useState(new Date(Date.now() + 3600000)) // 1 hour later
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false)
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false)
+  const [endDate, setEndDate] = useState(new Date(Date.now() + 3600000)) 
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -44,12 +42,68 @@ export const AddEventModal = ({
     startDate?: string
     endDate?: string
   }>({})
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false)
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false)
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false)
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false)
 
   useEffect(() => {
     if (visible) {
       loadCategories()
     }
   }, [visible])
+
+    const onStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartDatePicker(Platform.OS === 'ios')
+    if (selectedDate) {
+      const newStartDate = new Date(startDate)
+      newStartDate.setFullYear(selectedDate.getFullYear())
+      newStartDate.setMonth(selectedDate.getMonth())
+      newStartDate.setDate(selectedDate.getDate())
+      setStartDate(newStartDate)
+
+      if (newStartDate >= endDate) {
+        const newEndDate = new Date(newStartDate.getTime() + 3600000)
+        setEndDate(newEndDate)
+      }
+    }
+  }
+
+  const onStartTimeChange = (event: any, selectedTime?: Date) => {
+    setShowStartTimePicker(Platform.OS === 'ios')
+    if (selectedTime) {
+      const newStartDate = new Date(startDate)
+      newStartDate.setHours(selectedTime.getHours())
+      newStartDate.setMinutes(selectedTime.getMinutes())
+      setStartDate(newStartDate)
+
+      if (newStartDate >= endDate) {
+        const newEndDate = new Date(newStartDate.getTime() + 3600000)
+        setEndDate(newEndDate)
+      }
+    }
+  }
+
+  const onEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndDatePicker(Platform.OS === 'ios')
+    if (selectedDate) {
+      const newEndDate = new Date(endDate)
+      newEndDate.setFullYear(selectedDate.getFullYear())
+      newEndDate.setMonth(selectedDate.getMonth())
+      newEndDate.setDate(selectedDate.getDate())
+      setEndDate(newEndDate)
+    }
+  }
+
+  const onEndTimeChange = (event: any, selectedTime?: Date) => {
+    setShowEndTimePicker(Platform.OS === 'ios')
+    if (selectedTime) {
+      const newEndDate = new Date(endDate)
+      newEndDate.setHours(selectedTime.getHours())
+      newEndDate.setMinutes(selectedTime.getMinutes())
+      setEndDate(newEndDate)
+    }
+  }
 
   const loadCategories = async () => {
     try {
@@ -85,58 +139,6 @@ export const AddEventModal = ({
     const hours = String(date.getHours()).padStart(2, '0')
     const minutes = String(date.getMinutes()).padStart(2, '0')
     return `${hours}:${minutes}`
-  }
-
-  const onStartDateChange = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      const newStartDate = new Date(startDate)
-      newStartDate.setFullYear(selectedDate.getFullYear())
-      newStartDate.setMonth(selectedDate.getMonth())
-      newStartDate.setDate(selectedDate.getDate())
-      setStartDate(newStartDate)
-
-      // Ensure end date is after start date
-      if (newStartDate >= endDate) {
-        const newEndDate = new Date(newStartDate.getTime() + 3600000) // 1 hour later
-        setEndDate(newEndDate)
-      }
-    }
-  }
-
-  const onStartTimeChange = (event: any, selectedTime?: Date) => {
-    if (selectedTime) {
-      const newStartDate = new Date(startDate)
-      newStartDate.setHours(selectedTime.getHours())
-      newStartDate.setMinutes(selectedTime.getMinutes())
-      setStartDate(newStartDate)
-
-      // Ensure end date is after start date
-      if (newStartDate >= endDate) {
-        const newEndDate = new Date(newStartDate.getTime() + 3600000) // 1 hour later
-        setEndDate(newEndDate)
-      }
-    }
-  }
-
-  const onEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(Platform.OS === 'ios')
-    if (selectedDate) {
-      const newEndDate = new Date(endDate)
-      newEndDate.setFullYear(selectedDate.getFullYear())
-      newEndDate.setMonth(selectedDate.getMonth())
-      newEndDate.setDate(selectedDate.getDate())
-      setEndDate(newEndDate)
-    }
-  }
-
-  const onEndTimeChange = (event: any, selectedTime?: Date) => {
-    setShowEndTimePicker(Platform.OS === 'ios')
-    if (selectedTime) {
-      const newEndDate = new Date(endDate)
-      newEndDate.setHours(selectedTime.getHours())
-      newEndDate.setMinutes(selectedTime.getMinutes())
-      setEndDate(newEndDate)
-    }
   }
 
   const validate = () => {
@@ -175,7 +177,9 @@ export const AddEventModal = ({
     setSelectedCategoryIds([])
     setErrors({})
     setLoading(false)
-    setLoadingCategories(false)
+    setLoadingCategories(false)    
+    setShowStartDatePicker(false)
+    setShowStartTimePicker(false)
     setShowEndDatePicker(false)
     setShowEndTimePicker(false)
   }
@@ -185,7 +189,7 @@ export const AddEventModal = ({
       return
     }
 
-    if (!isAuthenticated) {
+     if (!isAuthenticated) {
       Alert.alert(
         'Não autenticado',
         'Você precisa estar logado para criar um evento. Por favor, faça login novamente.',
@@ -197,7 +201,7 @@ export const AddEventModal = ({
     const storedToken = await SecureStore.getItemAsync('auth_token')
     if (!storedToken && token) {
       await SecureStore.setItemAsync('auth_token', token)
-    }
+    } 
 
     if (!userLocation) {
       Alert.alert('Erro', 'Não foi possível obter sua localização')
@@ -246,13 +250,19 @@ export const AddEventModal = ({
     onClose()
   }
 
-  return (
+   return (
     <CustomModal
       visible={visible}
       onClose={handleClose}
       title="Adicionar Evento"
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView}      
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.form}>
           <Input
             label="Título *"
@@ -277,10 +287,31 @@ export const AddEventModal = ({
             textAlignVertical="top"
           />
 
-          {/* Start Date and Time */}
+         
           <View style={styles.dateTimeSection}>
             <Text style={styles.label}>Data e Hora de Início *</Text>
             <View style={styles.dateTimeRow}>
+             
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowStartDatePicker(true)}
+              >
+                <Text style={styles.dateTimeButtonText}>
+                  {formatDate(startDate)}
+                </Text>
+              </TouchableOpacity>
+             
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowStartTimePicker(true)}
+              >
+                <Text style={styles.dateTimeButtonText}>
+                  {formatTime(startDate)}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          
+            {showStartDatePicker && (
               <DateTimePicker
                 value={startDate}
                 mode="date"
@@ -288,23 +319,46 @@ export const AddEventModal = ({
                 onChange={onStartDateChange}
                 minimumDate={new Date()}
               />
+            )}
 
+            {showStartTimePicker && (
               <DateTimePicker
                 value={startDate}
                 mode="time"
                 display="default"
                 onChange={onStartTimeChange}
               />
-            </View>
+            )}
+
             {errors.startDate && (
               <Text style={styles.errorText}>{errors.startDate}</Text>
             )}
           </View>
-
-          {/* End Date and Time */}
+        
           <View style={styles.dateTimeSection}>
             <Text style={styles.label}>Data e Hora de Término *</Text>
             <View style={styles.dateTimeRow}>
+              
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowEndDatePicker(true)}
+              >
+                <Text style={styles.dateTimeButtonText}>
+                 {formatDate(endDate)}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowEndTimePicker(true)}
+              >
+                <Text style={styles.dateTimeButtonText}>
+                  {formatTime(endDate)}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            {showEndDatePicker && (
               <DateTimePicker
                 value={endDate}
                 mode="date"
@@ -312,20 +366,22 @@ export const AddEventModal = ({
                 onChange={onEndDateChange}
                 minimumDate={startDate}
               />
+            )}
 
+            {showEndTimePicker && (
               <DateTimePicker
                 value={endDate}
                 mode="time"
                 display="default"
                 onChange={onEndTimeChange}
               />
-            </View>
+            )}
+
             {errors.endDate && (
               <Text style={styles.errorText}>{errors.endDate}</Text>
             )}
           </View>
-
-          {/* Categories */}
+         
           <View style={styles.categoriesSection}>
             <Text style={styles.categoriesLabel}>Categorias (opcional)</Text>
 
@@ -389,7 +445,13 @@ export const AddEventModal = ({
 
 const styles = StyleSheet.create({
   scrollView: {
-    maxHeight: 500,
+    flex: 1,
+    width: '100%',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 30, 
   },
   form: {
     gap: 16,
