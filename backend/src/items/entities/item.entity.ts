@@ -19,6 +19,9 @@ export class Item {
   @Column({ type: 'float', nullable: true })
   confidence: number;
 
+  @Column({ nullable: true })
+  objectName: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -6,6 +6,7 @@ export interface Item {
   imageUrl: string;
   predictedCategoryId?: string;
   confidence?: number;
+  objectName?: string;
   createdAt: string;
   updatedAt: string;
   predictedCategory?: {

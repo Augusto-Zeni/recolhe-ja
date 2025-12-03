@@ -62,7 +62,8 @@ export default function Map() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
-  const { latitudeFromEventList, longitudeFromEventList, selectedLocationId, selectedLocationType } = useLocalSearchParams();
+  const [shouldShowCallout, setShouldShowCallout] = useState(false)
+  const { latitudeFromEventList, longitudeFromEventList, selectedLocationId, selectedLocationType, timestamp } = useLocalSearchParams();
   
   // Buscar localização do usuário
   useEffect(() => {
@@ -89,12 +90,17 @@ export default function Map() {
       })
 
       setInitialRegion(region)
-      
+
      setTimeout(() => {
         mapRef.current?.animateToRegion(region, 1000)
      }, 100)
+
+     // Marcar que deve mostrar o callout quando os parâmetros são recebidos
+     if (isFromEventList && selectedLocationId && selectedLocationType) {
+       setShouldShowCallout(true)
+     }
     })()
-  }, [latitudeFromEventList, longitudeFromEventList])
+  }, [latitudeFromEventList, longitudeFromEventList, selectedLocationId, selectedLocationType, timestamp])
 
   // Buscar pontos de coleta
   const fetchCollectionPoints = async () => {
@@ -126,19 +132,23 @@ export default function Map() {
 
   // Abrir callout automaticamente quando navegar de outro lugar
   useEffect(() => {
-    if (selectedLocationId && selectedLocationType && !loading) {
+    if (shouldShowCallout && selectedLocationId && selectedLocationType && !loading && collectionPoints.length > 0) {
       // Aguardar um pouco para garantir que os marcadores foram renderizados
       const timer = setTimeout(() => {
         const markerKey = `${selectedLocationType}-${selectedLocationId}`
         const marker = markerRefs.current[markerKey]
         if (marker) {
           marker.showCallout()
+          // Resetar o flag após mostrar o callout
+          setShouldShowCallout(false)
+        } else {
+          console.log('Marker not found:', markerKey, 'Available markers:', Object.keys(markerRefs.current))
         }
-      }, 800)
+      }, 1000)
 
       return () => clearTimeout(timer)
     }
-  }, [selectedLocationId, selectedLocationType, loading, collectionPoints, events])
+  }, [shouldShowCallout, selectedLocationId, selectedLocationType, loading, collectionPoints.length, events.length])
 
   // Função para obter a cor do marcador baseado nas categorias do evento
   const getEventMarkerColor = (event: Event): string => {

@@ -62,6 +62,7 @@ export class ItemsService {
       userId,
       predictedCategoryId: analysisResult.categoryId,
       confidence: analysisResult.confidence,
+      objectName: analysisResult.objectName,
     });
 
     const savedItem = await this.itemRepository.save(item);

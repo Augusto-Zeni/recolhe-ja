@@ -5,7 +5,7 @@ import * as Location from 'expo-location'
 import { useRouter } from 'expo-router'
 import { CustomModal } from '../CustomModal'
 import { Text } from '../Text'
-import { Item } from '@/src/services/items.service'
+import { Item, AnalyzedItem } from '@/src/services/items.service'
 import { collectionPointsService, CollectionPoint } from '@/src/services/collection-points.service'
 import { eventsService, Event } from '@/src/services/events.service'
 import { calculateDistance, Coordinate } from '@/src/utils/geolocation'
@@ -16,7 +16,7 @@ const { height } = Dimensions.get('window')
 interface ImageDetailsModalProps {
   visible: boolean
   onClose: () => void
-  item: Item | null
+  item: Item | AnalyzedItem | null
 }
 
 export const ImageDetailsModal = ({
@@ -36,6 +36,11 @@ export const ImageDetailsModal = ({
   useEffect(() => {
     if (visible && item) {
       getUserLocation()
+    } else if (!visible) {
+      // Reset state when modal closes
+      setUserLocation(null)
+      setLoadingLocation(false)
+      setNearestLocation(null)
     }
   }, [visible, item])
 
@@ -120,13 +125,15 @@ export const ImageDetailsModal = ({
       setNearestLocation(nearest)
 
       // Navegar para o mapa com as coordenadas do local mais próximo
+      // Adicionar timestamp para forçar navegação mesmo se os params forem iguais
       router.push({
         pathname: '/home/map',
         params: {
-          latitudeFromEventList: nearest.location.lat,
-          longitudeFromEventList: nearest.location.lon,
+          latitudeFromEventList: nearest.location.lat.toString(),
+          longitudeFromEventList: nearest.location.lon.toString(),
           selectedLocationId: nearest.location.id,
           selectedLocationType: nearest.type,
+          timestamp: Date.now().toString(),
         },
       })
 
@@ -166,6 +173,19 @@ export const ImageDetailsModal = ({
 
         {/* Informações */}
         <View style={styles.infoContainer}>
+          {/* Nome do Objeto */}
+          {(item.objectName || (item as AnalyzedItem).analysisDetails?.objectName) && (
+            <View style={styles.infoRow}>
+              <View style={styles.infoLabel}>
+                <Ionicons name="cube-outline" size={20} color={colors.green300} />
+                <Text style={styles.labelText}>Objeto Identificado</Text>
+              </View>
+              <Text style={styles.objectNameText}>
+                {item.objectName || (item as AnalyzedItem).analysisDetails?.objectName}
+              </Text>
+            </View>
+          )}
+
           {/* Data de Criação */}
           <View style={styles.infoRow}>
             <View style={styles.infoLabel}>
@@ -278,6 +298,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins_400Regular',
     color: colors.gray400,
+    paddingLeft: 28,
+  },
+  objectNameText: {
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    color: colors.green300,
     paddingLeft: 28,
   },
   categoryBadge: {
