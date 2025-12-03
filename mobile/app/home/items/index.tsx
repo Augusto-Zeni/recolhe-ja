@@ -6,6 +6,7 @@ import { Text } from '@/src/components/Text'
 import { itemsService, Item } from '@/src/services/items.service'
 import { colors } from '@/src/styles/colors'
 import { useRouter } from 'expo-router'
+import { ImageDetailsModal } from '@/src/components/ImageDetailsModal'
 
 export default function Items() {
   const insets = useSafeAreaInsets()
@@ -13,6 +14,8 @@ export default function Items() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const fetchItems = async () => {
     try {
@@ -43,8 +46,13 @@ export default function Items() {
   }, [])
 
   const handleItemPress = (item: Item) => {
-    // Aqui você pode navegar para uma página de detalhes do item se desejar
-    console.log('Item pressed:', item.id)
+    setSelectedItem(item)
+    setModalVisible(true)
+  }
+
+  const handleCloseModal = () => {
+    setModalVisible(false)
+    setSelectedItem(null)
   }
 
   const handleCameraPress = () => {
@@ -135,6 +143,12 @@ export default function Items() {
           />
         }
         columnWrapperStyle={styles.columnWrapper}
+      />
+
+      <ImageDetailsModal
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        item={selectedItem}
       />
     </View>
   )

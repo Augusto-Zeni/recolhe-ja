@@ -8,6 +8,17 @@ export interface Item {
   confidence?: number;
   createdAt: string;
   updatedAt: string;
+  predictedCategory?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface AnalyzedItem extends Item {
+  analysisDetails?: {
+    objectName: string;
+    description?: string;
+  };
 }
 
 export interface CreateItemDto {
@@ -50,6 +61,36 @@ class ItemsService {
       return response.data;
     } catch (error) {
       console.error('Error uploading image:', error);
+      throw error;
+    }
+  }
+
+  async analyzeImage(imageUri: string): Promise<AnalyzedItem> {
+    try {
+      // Create FormData for multipart upload
+      const formData = new FormData();
+
+      // Extract filename from URI
+      const filename = imageUri.split('/').pop() || 'photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      // Append the image file
+      formData.append('image', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
+
+      const response = await api.post<AnalyzedItem>('/items/analyze', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error analyzing image:', error);
       throw error;
     }
   }

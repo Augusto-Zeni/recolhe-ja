@@ -1,20 +1,23 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { colors } from '@/src/styles/colors';
-import { itemsService } from '@/src/services/items.service';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'
+import { useState, useRef } from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native'
+import { useRouter } from 'expo-router'
+import { Feather } from '@expo/vector-icons'
+import { colors } from '@/src/styles/colors'
+import { itemsService, type AnalyzedItem } from '@/src/services/items.service'
+import { ImageDetailsModal } from '@/src/components/ImageDetailsModal'
 
 export default function CameraScreen() {
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [permission, requestPermission] = useCameraPermissions();
-  const [isCapturing, setIsCapturing] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
-  const router = useRouter();
+  const [facing, setFacing] = useState<CameraType>('back')
+  const [permission, requestPermission] = useCameraPermissions()
+  const [isCapturing, setIsCapturing] = useState(false)
+  const [analyzedItem, setAnalyzedItem] = useState<AnalyzedItem | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
+  const cameraRef = useRef<CameraView>(null)
+  const router = useRouter()
 
   if (!permission) {
-    return <View style={styles.container} />;
+    return <View style={styles.container} />
   }
 
   if (!permission.granted) {
@@ -28,55 +31,54 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    );
+    )
   }
 
   function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
+    setFacing(current => (current === 'back' ? 'front' : 'back'))
   }
 
   async function takePicture() {
-    if (!cameraRef.current || isCapturing) return;
+    if (!cameraRef.current || isCapturing) return
 
     try {
-      setIsCapturing(true);
+      setIsCapturing(true)
 
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: false,
-      });
+      })
 
       if (!photo?.uri) {
-        throw new Error('Não foi possível capturar a foto');
+        throw new Error('Não foi possível capturar a foto')
       }
 
-      // Upload the photo to the backend
-      await itemsService.uploadImage(photo.uri);
+      // Analyze the photo with AI and upload to the backend
+      const result = await itemsService.analyzeImage(photo.uri)
 
-      Alert.alert(
-        'Sucesso!',
-        'Foto enviada com sucesso!',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      // Open modal with analyzed item details
+      setAnalyzedItem(result)
+      setModalVisible(true)
     } catch (error) {
-      console.error('Error taking picture:', error);
+      console.error('Error taking picture:', error)
       Alert.alert(
         'Erro',
-        'Não foi possível enviar a foto. Tente novamente.',
+        'Não foi possível analisar a foto. Tente novamente.',
         [{ text: 'OK' }]
-      );
+      )
     } finally {
-      setIsCapturing(false);
+      setIsCapturing(false)
     }
   }
 
   function handleClose() {
-    router.back();
+    router.back()
+  }
+
+  function handleCloseModal() {
+    setModalVisible(false)
+    setAnalyzedItem(null)
+    router.back()
   }
 
   return (
@@ -120,8 +122,14 @@ export default function CameraScreen() {
           </View>
         </View>
       </CameraView>
+
+      <ImageDetailsModal
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        item={analyzedItem}
+      />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -221,4 +229,4 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 60,
   },
-});
+})

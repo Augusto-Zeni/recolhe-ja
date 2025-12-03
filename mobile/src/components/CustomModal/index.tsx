@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 10,
   },
   modalContent: {
     backgroundColor: colors.white,
     borderRadius: 15,
-    width: width * 0.9,
-    maxHeight: height * 0.85,
+    width: width * 0.95,
+    maxHeight: height * 0.92,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    overflow: 'hidden',   
-    minHeight: height * 0.5, 
+    overflow: 'hidden',
+    minHeight: height * 0.75,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalBody: {
-    flex: 1,    
-    maxHeight: height * 0.75,
+    flex: 1,
+    maxHeight: height * 0.85,
   },
 })

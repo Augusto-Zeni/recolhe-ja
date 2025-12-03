@@ -2,10 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Quer
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { diskStorage } from 'multer';
+import { diskStorage, memoryStorage } from 'multer';
 import { extname } from 'path';
 import { ItemsService } from '../services/items.service';
 import { CreateItemDto, UpdateItemDto, UpdatePredictionDto } from '../dtos/items.dto';
+import { writeFileSync } from 'fs';
 
 @Controller('items')
 @UseGuards(AuthGuard('jwt'))
@@ -37,6 +38,39 @@ export class ItemsController {
   )
   uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
     return this.itemsService.createFromUpload(file, req.user.id);
+  }
+
+  @Post('analyze')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+          return callback(new Error('Apenas arquivos de imagem são permitidos!'), false);
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  async analyzeImage(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
+    // Salvar o arquivo no disco também
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = extname(file.originalname);
+    const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+    const filepath = `./uploads/${filename}`;
+
+    writeFileSync(filepath, file.buffer);
+
+    // Criar um objeto file com o filename para o serviço
+    const fileWithPath = {
+      ...file,
+      filename: filename,
+    };
+
+    return this.itemsService.analyzeImageWithAI(fileWithPath, req.user.id);
   }
 
   @Post()

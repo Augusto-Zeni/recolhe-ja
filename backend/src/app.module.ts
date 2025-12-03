@@ -8,6 +8,7 @@ import { ItemsModule } from 'src/items/items.module';
 import { CollectionPointsModule } from 'src/collection-points/collection-points.module';
 import { EventsModule } from 'src/events/events.module';
 import { CategoriesModule } from 'src/categories/categories.module';
+import { AiAnalysisModule } from 'src/ai-analysis/ai-analysis.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CategoriesModule } from 'src/categories/categories.module';
     CollectionPointsModule,
     EventsModule,
     CategoriesModule,
+    AiAnalysisModule,
   ],
 })
 export class AppModule {}

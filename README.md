@@ -96,6 +96,7 @@ As seguintes variáveis **devem** ser configuradas:
 #### Variáveis Opcionais
 
 - **`NGROK_AUTHTOKEN`**: Se você deseja expor a API publicamente para testes com o mobile em dispositivos físicos. [Obtenha aqui](https://dashboard.ngrok.com/get-started/your-authtoken)
+- **`GEMINI_API_KEY`**: Chave da API do Google Gemini para análise de imagens com IA. [Obtenha aqui](https://ai.google.dev/gemini-api/docs)
 
 ### Executando o Backend com Docker
 
@@ -350,6 +351,32 @@ Quando o backend estiver rodando, acesse a documentação Swagger em:
 http://localhost:3000/api
 ```
 
+## Features
+
+### Análise de Imagem com IA
+
+O sistema utiliza o **Google Gemini AI** para análise inteligente de imagens de resíduos recicláveis.
+
+**Como funciona:**
+1. Usuário tira foto de um objeto através do app mobile
+2. Imagem é enviada para análise via API
+3. Google Gemini identifica o objeto e classifica em uma categoria reciclável
+4. Sistema retorna: nome do objeto, categoria e nível de confiança
+
+**Categorias suportadas:**
+- Plástico
+- Papel
+- Metal
+- Vidro
+- Orgânico
+- Eletrônicos
+- Pilhas e Baterias
+- Óleo de Cozinha
+- Roupas e Têxteis
+- Medicamentos
+
+📖 **Documentação completa:** [FEATURE_AI_ANALYSIS.md](./FEATURE_AI_ANALYSIS.md)
+
 ## Tecnologias Utilizadas
 
 ### Backend
@@ -357,6 +384,7 @@ http://localhost:3000/api
 - TypeORM
 - PostgreSQL
 - Passport (Google OAuth, JWT)
+- Google Generative AI (@google/generative-ai)
 - Docker
 
 ### Mobile

@@ -54,6 +54,7 @@ const customMapStyle = [
 
 export default function Map() {
   const mapRef = useRef<MapView>(null)
+  const markerRefs = useRef<{ [key: string]: any }>({})
   const insets = useSafeAreaInsets()
   const [initialRegion, setInitialRegion] = useState<Region | undefined>(undefined)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
@@ -61,7 +62,7 @@ export default function Map() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
-  const { latitudeFromEventList, longitudeFromEventList } = useLocalSearchParams();
+  const { latitudeFromEventList, longitudeFromEventList, selectedLocationId, selectedLocationType } = useLocalSearchParams();
   
   // Buscar localização do usuário
   useEffect(() => {
@@ -122,6 +123,22 @@ export default function Map() {
     fetchCollectionPoints()
     fetchEvents()
   }, [])
+
+  // Abrir callout automaticamente quando navegar de outro lugar
+  useEffect(() => {
+    if (selectedLocationId && selectedLocationType && !loading) {
+      // Aguardar um pouco para garantir que os marcadores foram renderizados
+      const timer = setTimeout(() => {
+        const markerKey = `${selectedLocationType}-${selectedLocationId}`
+        const marker = markerRefs.current[markerKey]
+        if (marker) {
+          marker.showCallout()
+        }
+      }, 800)
+
+      return () => clearTimeout(timer)
+    }
+  }, [selectedLocationId, selectedLocationType, loading, collectionPoints, events])
 
   // Função para obter a cor do marcador baseado nas categorias do evento
   const getEventMarkerColor = (event: Event): string => {
@@ -194,7 +211,12 @@ export default function Map() {
 
           return (
             <Marker
-              key={`collection-${point.id}`}
+              key={`collection-point-${point.id}`}
+              ref={(ref) => {
+                if (ref) {
+                  markerRefs.current[`collection-point-${point.id}`] = ref
+                }
+              }}
               coordinate={{
                 latitude: point.lat,
                 longitude: point.lon,
@@ -230,6 +252,11 @@ export default function Map() {
           return (
             <Marker
               key={`event-${event.id}`}
+              ref={(ref) => {
+                if (ref) {
+                  markerRefs.current[`event-${event.id}`] = ref
+                }
+              }}
               coordinate={{
                 latitude: event.lat,
                 longitude: event.lon,

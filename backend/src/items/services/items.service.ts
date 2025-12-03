@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Item } from '../entities/item.entity';
 import { CreateItemDto, UpdateItemDto } from '../dtos/items.dto';
+import { AiAnalysisService } from '../../ai-analysis/ai-analysis.service';
 
 @Injectable()
 export class ItemsService {
   constructor(
     @InjectRepository(Item)
-    private itemRepository: Repository<Item>
+    private itemRepository: Repository<Item>,
+    private aiAnalysisService: AiAnalysisService,
   ) {}
 
   async create(createItemDto: CreateItemDto, userId: string) {
@@ -38,6 +40,40 @@ export class ItemsService {
 
     const savedItem = await this.itemRepository.save(item);
     return this.findOne(savedItem.id);
+  }
+
+  async analyzeImageWithAI(file: Express.Multer.File, userId: string) {
+    if (!file) {
+      throw new Error('Nenhum arquivo foi enviado');
+    }
+
+    // Construir a URL da imagem
+    const imageUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/${file.filename}`;
+
+    // Analisar a imagem com o Gemini AI
+    const analysisResult = await this.aiAnalysisService.analyzeImage(
+      file.buffer,
+      file.mimetype
+    );
+
+    // Criar o item com as informações da análise
+    const item = this.itemRepository.create({
+      imageUrl,
+      userId,
+      predictedCategoryId: analysisResult.categoryId,
+      confidence: analysisResult.confidence,
+    });
+
+    const savedItem = await this.itemRepository.save(item);
+
+    // Retornar o item com informações adicionais da análise
+    return {
+      ...await this.findOne(savedItem.id),
+      analysisDetails: {
+        objectName: analysisResult.objectName,
+        description: analysisResult.description,
+      },
+    };
   }
 
   async findAll(page = 1, limit = 10, userId?: string) {
