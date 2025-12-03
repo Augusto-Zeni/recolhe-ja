@@ -31,12 +31,26 @@
         }
       },
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anonymous.recolheja"
     },
     "web": {
       "bundler": "metro",
@@ -44,6 +58,25 @@
       "favicon": "./assets/images/Logo.svg"
     },
     "plugins": [
+      [
+        "expo-widget",
+        {
+          "widgets": [
+            {
+              "name": "MyWidget",
+              "modulePath": "./widgets/MyWidget.tsx",
+              "label": "My Widget",
+              "minWidth": "4x2",
+              "maxWidth": "4x2",
+              "minHeight": "2x1",
+              "maxHeight": "2x1",
+              "description": "Teste",
+              "widgetTaskHandlerName": "widgetTask",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
