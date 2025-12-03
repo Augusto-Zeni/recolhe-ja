@@ -5,12 +5,13 @@ import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/src/components/Text'
 import { itemsService, Item } from '@/src/services/items.service'
 import { colors } from '@/src/styles/colors'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { ImageDetailsModal } from '@/src/components/ImageDetailsModal'
 
 export default function Items() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const params = useLocalSearchParams()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -44,6 +45,24 @@ export default function Items() {
   useEffect(() => {
     fetchItems()
   }, [])
+
+  // Atualizar a lista quando vier de outra tela com parâmetro de refresh
+  useEffect(() => {
+    if (params.refresh) {
+      fetchItems()
+    }
+  }, [params.refresh])
+
+  // Abrir o modal automaticamente quando vier com openItemId
+  useEffect(() => {
+    if (params.openItemId && items.length > 0) {
+      const itemToOpen = items.find(item => item.id === params.openItemId)
+      if (itemToOpen) {
+        setSelectedItem(itemToOpen)
+        setModalVisible(true)
+      }
+    }
+  }, [params.openItemId, items])
 
   const handleItemPress = (item: Item) => {
     setSelectedItem(item)

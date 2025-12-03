@@ -1,20 +1,20 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'
 import { useState, useRef } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator, Animated } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { colors } from '@/src/styles/colors'
-import { itemsService, type AnalyzedItem } from '@/src/services/items.service'
-import { ImageDetailsModal } from '@/src/components/ImageDetailsModal'
+import { itemsService } from '@/src/services/items.service'
+import { BlurView } from 'expo-blur'
 
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>('back')
   const [permission, requestPermission] = useCameraPermissions()
   const [isCapturing, setIsCapturing] = useState(false)
-  const [analyzedItem, setAnalyzedItem] = useState<AnalyzedItem | null>(null)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
   const cameraRef = useRef<CameraView>(null)
   const router = useRouter()
+  const loadingOpacity = useRef(new Animated.Value(0)).current
 
   if (!permission) {
     return <View style={styles.container} />
@@ -38,11 +38,33 @@ export default function CameraScreen() {
     setFacing(current => (current === 'back' ? 'front' : 'back'))
   }
 
+  function showLoading(message: string) {
+    setLoadingMessage(message)
+    setIsCapturing(true)
+    Animated.timing(loadingOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start()
+  }
+
+  function hideLoading() {
+    Animated.timing(loadingOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsCapturing(false)
+      setLoadingMessage('')
+    })
+  }
+
   async function takePicture() {
     if (!cameraRef.current || isCapturing) return
 
     try {
-      setIsCapturing(true)
+      // Primeira etapa: Capturando foto
+      showLoading('Capturando foto...')
 
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
@@ -53,31 +75,40 @@ export default function CameraScreen() {
         throw new Error('Não foi possível capturar a foto')
       }
 
+      // Segunda etapa: Analisando com IA
+      setLoadingMessage('Analisando imagem com IA...')
+
       // Analyze the photo with AI and upload to the backend
       const result = await itemsService.analyzeImage(photo.uri)
 
-      // Open modal with analyzed item details
-      setAnalyzedItem(result)
-      setModalVisible(true)
+      // Esconde o loading
+      hideLoading()
+
+      // Pequeno delay para dar tempo da animação de saída e navegar para Minhas Imagens
+      setTimeout(() => {
+        // Navegar diretamente para a tela de Minhas Imagens com o ID da imagem criada
+        router.push({
+          pathname: '/home/items',
+          params: {
+            refresh: Date.now().toString(),
+            openItemId: result.id, // Passar o ID da imagem para abrir o modal
+          },
+        })
+      }, 250)
     } catch (error) {
       console.error('Error taking picture:', error)
-      Alert.alert(
-        'Erro',
-        'Não foi possível analisar a foto. Tente novamente.',
-        [{ text: 'OK' }]
-      )
-    } finally {
-      setIsCapturing(false)
+      hideLoading()
+      setTimeout(() => {
+        Alert.alert(
+          'Erro',
+          'Não foi possível analisar a foto. Tente novamente.',
+          [{ text: 'OK' }]
+        )
+      }, 250)
     }
   }
 
   function handleClose() {
-    router.back()
-  }
-
-  function handleCloseModal() {
-    setModalVisible(false)
-    setAnalyzedItem(null)
     router.back()
   }
 
@@ -123,11 +154,27 @@ export default function CameraScreen() {
         </View>
       </CameraView>
 
-      <ImageDetailsModal
-        visible={modalVisible}
-        onClose={handleCloseModal}
-        item={analyzedItem}
-      />
+      {/* Loading Overlay */}
+      {isCapturing && (
+        <Animated.View
+          style={[
+            styles.loadingOverlay,
+            { opacity: loadingOpacity }
+          ]}
+        >
+          <BlurView intensity={80} style={styles.blurView}>
+            <View style={styles.loadingContent}>
+              <View style={styles.loadingIconContainer}>
+                <ActivityIndicator size="large" color={colors.green200} />
+              </View>
+              <Text style={styles.loadingText}>{loadingMessage}</Text>
+              <Text style={styles.loadingSubtext}>
+                Por favor, aguarde...
+              </Text>
+            </View>
+          </BlurView>
+        </Animated.View>
+      )}
     </View>
   )
 }
@@ -228,5 +275,44 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 60,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
+  },
+  blurView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContent: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 20,
+    padding: 40,
+    alignItems: 'center',
+    minWidth: 280,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  loadingIconContainer: {
+    marginBottom: 20,
+  },
+  loadingText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  loadingSubtext: {
+    color: colors.gray400,
+    fontSize: 14,
+    textAlign: 'center',
   },
 })
