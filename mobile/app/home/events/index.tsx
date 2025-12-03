@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { StyleSheet, View, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as Location from 'expo-location'
 import { Ionicons } from '@expo/vector-icons'
@@ -18,12 +18,14 @@ export default function Events() {
   const [refreshing, setRefreshing] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [subscribedEvents, setSubscribedEvents] = useState<Set<string>>(new Set())
 
   const fetchEvents = async () => {
     try {
       setLoading(true)
       const response = await eventsService.getAll(1, 100)
       setEvents(response.items)
+      await checkSubscriptions(response.items)
     } catch (err) {
       console.error('Error loading events:', err)
     } finally {
@@ -36,6 +38,7 @@ export default function Events() {
       setRefreshing(true)
       const response = await eventsService.getAll(1, 100)
       setEvents(response.items)
+      await checkSubscriptions(response.items)
     } catch (err) {
       console.error('Error refreshing events:', err)
     } finally {
@@ -77,6 +80,57 @@ export default function Events() {
     });
   }
 
+  const isEventEnded = (event: Event) => {
+    const now = new Date()
+    const endDate = new Date(event.endAt)
+    return endDate <= now
+  }
+
+  const handleSubscribeToggle = async (eventId: string) => {
+    try {
+      const isSubscribed = subscribedEvents.has(eventId)
+
+      if (isSubscribed) {
+        await eventsService.unsubscribe(eventId)
+        setSubscribedEvents(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(eventId)
+          return newSet
+        })
+        Alert.alert('Sucesso', 'Você foi desinscrito do evento!')
+      } else {
+        await eventsService.subscribe(eventId)
+        setSubscribedEvents(prev => new Set(prev).add(eventId))
+        Alert.alert('Sucesso', 'Você foi inscrito no evento!')
+      }
+
+      // Refresh events to update participant count
+      await fetchEvents()
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 'Erro ao processar inscrição'
+      Alert.alert('Erro', errorMessage)
+    }
+  }
+
+  const checkSubscriptions = async (eventsList: Event[]) => {
+    try {
+      const subscriptionChecks = await Promise.all(
+        eventsList.map(event => eventsService.isSubscribed(event.id))
+      )
+
+      const newSubscribedEvents = new Set<string>()
+      eventsList.forEach((event, index) => {
+        if (subscriptionChecks[index]) {
+          newSubscribedEvents.add(event.id)
+        }
+      })
+
+      setSubscribedEvents(newSubscribedEvents)
+    } catch (error) {
+      console.error('Error checking subscriptions:', error)
+    }
+  }
+
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>Nenhum evento encontrado</Text>
@@ -110,9 +164,44 @@ export default function Events() {
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <EventCard event={item} onPress={() => handleEventPress(item)} />
-        )}
+        renderItem={({ item }) => {
+          const eventEnded = isEventEnded(item)
+          const isSubscribed = subscribedEvents.has(item.id)
+
+          return (
+            <View style={styles.eventContainer}>
+              <EventCard event={item} onPress={() => handleEventPress(item)} />
+              {eventEnded ? (
+                <View style={styles.endedButton}>
+                  <Ionicons
+                    name="time-outline"
+                    size={20}
+                    color={colors.gray200}
+                  />
+                  <Text style={styles.endedButtonText}>Evento Encerrado</Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.subscribeButton,
+                    isSubscribed && styles.unsubscribeButton
+                  ]}
+                  onPress={() => handleSubscribeToggle(item.id)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={isSubscribed ? "checkmark-circle" : "add-circle-outline"}
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text style={styles.subscribeButtonText}>
+                    {isSubscribed ? 'Inscrito' : 'Inscrever-se'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )
+        }}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyList}
         refreshControl={
@@ -183,5 +272,47 @@ const styles = StyleSheet.create({
     color: colors.gray200,
     textAlign: 'center',
     paddingHorizontal: 40,
+  },
+  eventContainer: {
+    marginBottom: 16,
+  },
+  subscribeButton: {
+    backgroundColor: colors.green300,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: -8,
+    marginHorizontal: 4,
+    gap: 8,
+  },
+  unsubscribeButton: {
+    backgroundColor: colors.gray200,
+  },
+  subscribeButtonText: {
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    color: colors.white,
+  },
+  endedButton: {
+    backgroundColor: '#F5F5F5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: -8,
+    marginHorizontal: 4,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.gray200 + '40',
+  },
+  endedButtonText: {
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    color: colors.gray200,
   },
 })

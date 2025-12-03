@@ -62,4 +62,19 @@ export class EventsController {
   remove(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
     return this.eventsService.remove(id, req.user.id);
   }
+
+  @Post(':id/subscribe')
+  subscribe(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.eventsService.subscribe(id, req.user.id);
+  }
+
+  @Delete(':id/subscribe')
+  unsubscribe(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.eventsService.unsubscribe(id, req.user.id);
+  }
+
+  @Get(':id/is-subscribed')
+  isSubscribed(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.eventsService.isUserSubscribed(id, req.user.id);
+  }
 }

@@ -50,6 +50,12 @@ export function EventCard({ event, onPress }: EventCardProps) {
         </View>
       </View>
 
+      <View style={styles.participantsContainer}>
+        <Text style={styles.participantsText}>
+          {event.participantsCount || 0} {event.participantsCount === 1 ? 'inscrito' : 'inscritos'}
+        </Text>
+      </View>
+
       {event.eventCategories && event.eventCategories.length > 0 && (
         <View style={styles.categoriesContainer}>
           {event.eventCategories.map((eventCategory) => (
@@ -78,7 +84,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -134,6 +139,17 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 12,
     color: colors.black200,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  participantsContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200 + '30',
+  },
+  participantsText: {
+    fontSize: 13,
+    color: colors.green300,
     fontFamily: 'Poppins_600SemiBold',
   },
   categoriesContainer: {

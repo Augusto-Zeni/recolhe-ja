@@ -14,6 +14,7 @@ export interface Event {
   eventCategories?: EventCategory[]
   eventParticipants?: EventParticipant[]
   user?: User
+  participantsCount?: number
 }
 
 export interface EventCategory {
@@ -158,6 +159,36 @@ export const eventsService = {
       await api.delete(`/events/${id}`)
     } catch (error) {
       console.error(`Error deleting event ${id}:`, error)
+      throw error
+    }
+  },
+
+  async subscribe(id: string): Promise<Event> {
+    try {
+      const response = await api.post<Event>(`/events/${id}/subscribe`)
+      return response.data
+    } catch (error) {
+      console.error(`Error subscribing to event ${id}:`, error)
+      throw error
+    }
+  },
+
+  async unsubscribe(id: string): Promise<Event> {
+    try {
+      const response = await api.delete<Event>(`/events/${id}/subscribe`)
+      return response.data
+    } catch (error) {
+      console.error(`Error unsubscribing from event ${id}:`, error)
+      throw error
+    }
+  },
+
+  async isSubscribed(id: string): Promise<boolean> {
+    try {
+      const response = await api.get<boolean>(`/events/${id}/is-subscribed`)
+      return response.data
+    } catch (error) {
+      console.error(`Error checking subscription for event ${id}:`, error)
       throw error
     }
   }
