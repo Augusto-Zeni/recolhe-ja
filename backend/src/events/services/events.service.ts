@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Event } from '../entities/event.entity';
 import { EventCategory } from '../entities/event-category.entity';
 import { EventParticipant } from '../entities/event-participant.entity';
@@ -56,7 +56,12 @@ export class EventsService {
   }
 
   async findAll(page = 1, limit = 10) {
+    const now = new Date();
+
     const [events, total] = await this.eventRepository.findAndCount({
+      where: {
+        endAt: MoreThan(now),
+      },
       relations: ['user', 'eventCategories', 'eventCategories.category', 'eventParticipants'],
       skip: (page - 1) * limit,
       take: limit,

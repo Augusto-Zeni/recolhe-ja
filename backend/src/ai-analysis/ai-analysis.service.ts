@@ -20,7 +20,7 @@ export class AiAnalysisService {
   constructor(
     private configService: ConfigService,
     @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
+    private categoryRepository: Repository<Category>
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (!apiKey) {
@@ -33,7 +33,7 @@ export class AiAnalysisService {
     try {
       // Buscar todas as categorias do banco de dados
       const categories = await this.categoryRepository.find();
-      const categoryNames = categories.map(cat => cat.name).join(', ');
+      const categoryNames = categories.map((cat) => cat.name).join(', ');
 
       // Criar prompt para o Gemini
       const prompt = `Analise esta imagem e identifique o objeto principal que deve ser descartado ou reciclado.
@@ -75,14 +75,13 @@ IMPORTANTE:
         // Remover possíveis markdown code blocks
         const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim();
         analysisData = JSON.parse(cleanedText);
-      } catch (parseError) {
-        throw new Error(`Erro ao parsear resposta do Gemini: ${text}`);
+      } catch (error) {
+        console.error('Erro ao parsear resposta do Gemini:', error);
+        throw new Error(`Erro ao parsear resposta do Gemini: ${error.message}`);
       }
 
       // Validar e encontrar a categoria correspondente
-      const category = categories.find(
-        cat => cat.name.toLowerCase() === analysisData.categoryName.toLowerCase()
-      );
+      const category = categories.find((cat) => cat.name.toLowerCase() === analysisData.categoryName.toLowerCase());
 
       if (!category) {
         // Se não encontrar exata, tentar encontrar a mais similar
@@ -107,12 +106,9 @@ IMPORTANTE:
         confidence: analysisData.confidence,
         description: analysisData.description,
       };
-
     } catch (error) {
       console.error('Erro ao analisar imagem com Gemini:', error);
-      throw new InternalServerErrorException(
-        `Erro ao analisar imagem: ${error.message}`
-      );
+      throw new InternalServerErrorException(`Erro ao analisar imagem: ${error.message}`);
     }
   }
 
@@ -129,22 +125,22 @@ IMPORTANTE:
 
     // Mapeamento de sinônimos comuns
     const synonymMap: { [key: string]: string[] } = {
-      'plástico': ['plastico', 'plastic', 'pvc', 'pet'],
-      'papel': ['cardboard', 'papelão', 'papelao', 'cartolina'],
-      'metal': ['alumínio', 'aluminio', 'aço', 'aco', 'ferro', 'lata'],
-      'vidro': ['glass', 'cristal'],
-      'orgânico': ['organico', 'organic', 'compostável', 'compostavel', 'biodegradável', 'biodegradavel'],
-      'eletrônicos': ['eletronicos', 'eletrônico', 'eletronico', 'electronic', 'e-waste'],
+      plástico: ['plastico', 'plastic', 'pvc', 'pet'],
+      papel: ['cardboard', 'papelão', 'papelao', 'cartolina'],
+      metal: ['alumínio', 'aluminio', 'aço', 'aco', 'ferro', 'lata'],
+      vidro: ['glass', 'cristal'],
+      orgânico: ['organico', 'organic', 'compostável', 'compostavel', 'biodegradável', 'biodegradavel'],
+      eletrônicos: ['eletronicos', 'eletrônico', 'eletronico', 'electronic', 'e-waste'],
       'pilhas e baterias': ['pilha', 'bateria', 'battery', 'pilhas', 'baterias'],
       'óleo de cozinha': ['oleo', 'óleo', 'cooking oil', 'oil'],
       'roupas e têxteis': ['roupa', 'tecido', 'textil', 'têxtil', 'textile', 'clothing'],
-      'medicamentos': ['medicamento', 'remedio', 'remédio', 'medicine', 'farmaco', 'fármaco'],
+      medicamentos: ['medicamento', 'remedio', 'remédio', 'medicine', 'farmaco', 'fármaco'],
     };
 
     // Buscar usando sinônimos
     for (const [mainCategory, synonyms] of Object.entries(synonymMap)) {
-      if (synonyms.some(syn => normalizedName.includes(syn))) {
-        const category = categories.find(cat => cat.name.toLowerCase() === mainCategory.toLowerCase());
+      if (synonyms.some((syn) => normalizedName.includes(syn))) {
+        const category = categories.find((cat) => cat.name.toLowerCase() === mainCategory.toLowerCase());
         if (category) return category;
       }
     }

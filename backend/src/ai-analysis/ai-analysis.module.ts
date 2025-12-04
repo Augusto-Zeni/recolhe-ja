@@ -5,10 +5,7 @@ import { AiAnalysisService } from './ai-analysis.service';
 import { Category } from '../categories/entities/category.entity';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([Category]),
-  ],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Category])],
   providers: [AiAnalysisService],
   exports: [AiAnalysisService],
 })
