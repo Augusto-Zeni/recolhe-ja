@@ -6,10 +6,7 @@ import { Item } from './entities/item.entity';
 import { AiAnalysisModule } from '../ai-analysis/ai-analysis.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Item]),
-    AiAnalysisModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Item]), AiAnalysisModule],
   providers: [ItemsService],
   controllers: [ItemsController],
   exports: [ItemsService],
